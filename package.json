@@ -1,0 +1,46 @@
+{
+  "name": "memo",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "postinstall": "prisma generate",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.6.0",
+    "@tailwindcss/line-clamp": "^0.4.4",
+    "crypto-js": "^4.2.0",
+    "cytoscape": "^3.27.0",
+    "cytoscape-cose-bilkent": "^4.1.0",
+    "lodash": "^4.17.21",
+    "lru-cache": "^10.1.0",
+    "next": "14.0.3",
+    "next-themes": "^0.2.1",
+    "prisma": "^5.6.0",
+    "react": "^18",
+    "react-dom": "^18",
+    "react-hot-toast": "^2.4.1",
+    "react-rough-notation": "^1.0.5",
+    "roughjs": "^4.6.6",
+    "swr": "^2.2.4",
+    "use-debounce": "^10.0.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/cytoscape": "^3.19.16",
+    "@types/lodash": "^4.14.202",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.0.1",
+    "daisyui": "^4.4.17",
+    "eslint": "^8",
+    "eslint-config-next": "14.0.3",
+    "postcss": "^8",
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5"
+  }
+}
