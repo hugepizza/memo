@@ -1,4 +1,6 @@
 - [ ] load more
+  - [x] memo
+  - [ ] google book
 - [ ] svg export
 - [ ] auth
   - [ ] nextAuth

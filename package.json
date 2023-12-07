@@ -23,6 +23,7 @@
     "react": "^18",
     "react-dom": "^18",
     "react-hot-toast": "^2.4.1",
+    "react-paginate": "^8.2.0",
     "react-rough-notation": "^1.0.5",
     "roughjs": "^4.6.6",
     "swr": "^2.2.4",

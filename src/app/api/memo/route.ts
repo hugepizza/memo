@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/prisma/prisma";
 import { Prisma } from "@prisma/client";
-import { LRUCache } from "lru-cache";
 import { z } from "zod";
 import { GoogleBook } from "@/app/tpyes/model";
-import { env } from "process";
-import { words } from "lodash";
 
 async function GET(request: NextRequest) {
   const userId = "wll";
+  const searchParams = request.nextUrl.searchParams;
+  const page = parseInt(searchParams.get("page") || "0", 10) || 0;
+  const pageSize = parseInt(searchParams.get("pageSize") || "8", 10) || 8;
   const q: Prisma.MemoWhereInput = { userId, deletedAt: { equals: null } };
   const memo = await prisma.memo.findMany({
     where: q,
@@ -18,8 +18,11 @@ async function GET(request: NextRequest) {
       events: true,
       works: true,
     },
+    take: pageSize,
+    skip: (page - 1) * pageSize,
   });
-  return NextResponse.json({ data: { memo } });
+  const count = await prisma.memo.count({ where: q });
+  return NextResponse.json({ data: { memo, count } });
 }
 
 const input = z.object({
@@ -97,8 +100,8 @@ async function POST(request: NextRequest) {
 
 async function getBookInfoFromGoogle(id: string) {
   const requestUrl = `https://www.googleapis.com/books/v1/volumes/${id}`;
-  console.log('requestUrl',requestUrl);
-  
+  console.log("requestUrl", requestUrl);
+
   try {
     const resp = await fetch(requestUrl, {
       method: "GET",

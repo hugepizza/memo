@@ -3,30 +3,86 @@ import useSWR from "swr";
 import Image from "next/image";
 import Link from "next/link";
 import { Memo } from "../tpyes/model";
+import { useEffect, useState } from "react";
+import ReactPaginate from "react-paginate";
 
 const elementWidth = 240;
 export default function Page() {
-  const { data, isLoading } = useSWR("/api/memo", (url: string) =>
-    fetch(url, { method: "GET" })
-      .then((resp) => resp.json())
-      .then((resp) => resp.data.memo as Memo[])
-  );
+  const [pageIndex, setPageIndex] = useState(1);
 
   return (
     <div className="flex flex-col justify-center w-full space-y-2">
       <AddButton />
-      <div className="flex justify-center w-full">
-        <div className="grid gap-4 grid-cols-4 w-full">
-          {isLoading ? <SkeletonGroup /> : <CardGroup memo={data}></CardGroup>}
-        </div>
+      <div className="flex flex-col justify-center w-full">
+        <MemoPage page={pageIndex} setPage={setPageIndex} />
       </div>
     </div>
   );
 }
 
-function CardGroup({ memo }: { memo?: Memo[] }) {
-  const g = memo?.map((ele) => <MemoCard key={ele.id} memo={ele} />);
-  return g;
+function MemoPage({
+  page,
+  setPage,
+}: {
+  page: number;
+  setPage: (page: number) => void;
+}) {
+  const [maxPage, setMaxPage] = useState(0);
+  const pageSize = 8;
+  const { data, isLoading } = useSWR(
+    `/api/memo?pageSize=${pageSize}&page=${page}`,
+    (url: string) =>
+      fetch(url, { method: "GET" })
+        .then((resp) => resp.json())
+        .then((resp) => resp.data as { memo: Memo[]; count: number })
+  );
+
+  useEffect(() => {
+    if (data) {
+      setMaxPage(Math.ceil((data?.count ?? 0) / pageSize));
+    }
+  }, [data]);
+  console.log("page", page);
+
+  const pag = (
+    <ReactPaginate
+      previousLabel=<button className="join-item btn">{"<<"}</button>
+      nextLabel=<button className="join-item btn">{">>"}</button>
+      breakLabel="..."
+      breakClassName="join-item btn"
+      pageCount={maxPage}
+      forcePage={page - 1}
+      pageRangeDisplayed={5}
+      containerClassName="join self-end"
+      pageLinkClassName="join-item btn"
+      activeLinkClassName="btn btn-disabled"
+      onPageChange={(s) => {
+        setPage(s.selected + 1);
+      }}
+      renderOnZeroPageCount={null}
+    />
+  );
+
+  if (isLoading) {
+    return (
+      <>
+        <div className="grid gap-4 grid-cols-4 w-full">
+          <SkeletonGroup />
+        </div>
+        {pag}
+      </>
+    );
+  }
+  return (
+    <>
+      <div className="grid gap-4 grid-cols-4 w-full">
+        {data?.memo.map((ele) => (
+          <MemoCard key={ele.id} memo={ele} />
+        ))}
+      </div>
+      {pag}
+    </>
+  );
 }
 
 function MemoCard({ memo }: { memo: Memo }) {
@@ -57,10 +113,19 @@ function MemoCard({ memo }: { memo: Memo }) {
 
 function SkeletonGroup() {
   const skeleton = (
-    <div
-      className="skeleton col-span-1 flex-grow"
-      style={{ width: elementWidth, height: elementWidth * 1.5 * 0.8 }}
-    />
+    <div className="flex flex-col">
+      <div
+        className="skeleton col-span-1 flex-grow"
+        style={{ width: elementWidth, height: elementWidth * 1.5 * 0.8 }}
+      ></div>
+      <div
+        className="flex flex-col space-y-1 py-1"
+        style={{ width: elementWidth, height: elementWidth * 1.5 * 0.2 }}
+      >
+        <div className="skeleton w-full grow"></div>
+        <div className="skeleton w-full grow"></div>
+      </div>
+    </div>
   );
   return (
     <>
