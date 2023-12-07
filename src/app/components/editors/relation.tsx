@@ -23,15 +23,21 @@ export default function RelationEditor({
       characters={characters}
       relations={relations}
     >
-      <div className="flex flex-row w-full justify-center items-center  space-y-1 py-4">
+      <div className="flex flex-row w-full space-y-1 py-4">
         <div className="flex flex-col min-w-[60%]">
-          <ul>
-            {relations?.map((c) => (
-              <li key={c.id}>
-                <SingleRelationEditor relation={c} />
-              </li>
-            ))}
-          </ul>
+          {relations.length > 0 ? (
+            <div className="flex flex-col">
+              <ul>
+                {relations?.map((c) => (
+                  <li key={c.id}>
+                    <SingleRelationEditor relation={c} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <div className="text-center">No relation yet</div>
+          )}
         </div>
         <AddRelation characters={characters} />
       </div>

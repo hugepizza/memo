@@ -1,16 +1,13 @@
 "use client";
 import { useTheme } from "next-themes";
 import cytoscape from "cytoscape";
-import { createElement, useContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import rough from "roughjs";
 
 import { ZCOOL_KuaiLe } from "next/font/google";
 import { RoughSVG } from "roughjs/bin/svg";
 import { CharacterModal } from "../editors/character-modal";
-import ReactDOM from "react-dom";
-import CharacterEditerContextProvider, {
-  CharacterEditerContext,
-} from "../editors/character-context";
+import CharacterEditerContextProvider from "../editors/character-context";
 const font = ZCOOL_KuaiLe({ weight: "400", subsets: ["latin"] });
 
 export type Node = {

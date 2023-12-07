@@ -15,13 +15,17 @@ export function CharacterModal({
   isVisible: boolean;
   setIsVisible: (v: boolean) => void;
 }) {
-  const { isRequesting, updateCharacter, deleteCharacter, addCharacter } =
-    useContext(CharacterEditerContext);
+  const {
+    memoId,
+    isRequesting,
+    updateCharacter,
+    deleteCharacter,
+    addCharacter,
+  } = useContext(CharacterEditerContext);
   console.log("updateCharacter", updateCharacter);
 
   const [name, setName] = useState("");
   const [remark, setRemark] = useState("");
-  const [memoId, setMemoId] = useState("");
   const { data } = useSWR("/api/character/" + id.toString(), (url) => {
     if (isNaN(id)) {
       setName("");
@@ -40,7 +44,6 @@ export function CharacterModal({
     if (data) {
       setName(data.name);
       setRemark(data.remark ?? "");
-      setMemoId(data.memoId);
     }
   }, [data]);
 
