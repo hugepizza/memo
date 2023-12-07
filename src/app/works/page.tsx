@@ -1,7 +1,7 @@
 "use client";
 import _ from "lodash";
 import { useDebounce } from "use-debounce";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useSWR from "swr";
 import { GoogleBook } from "../tpyes/model";
 import logo from "../../../public/search-logo.svg";
@@ -9,17 +9,13 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import "./page.style.css";
+import { number } from "zod";
+import ReactPaginate from "react-paginate";
 
 export default function Page() {
   const [kw, setKw] = useState("");
   const [debouncedValue] = useDebounce(kw, 300);
-  const { data } = useSWR(
-    `/api/google_books?kw=${debouncedValue || "Karamazov"}`,
-    (url: string) =>
-      fetch(url, { method: "GET" })
-        .then((resp) => resp.json())
-        .then((resp) => resp.data.books as GoogleBook[])
-  );
+  const [page, setPage] = useState(1);
 
   const addMemo = async (googleBookId: string) => {
     const resp = await fetch("/api/memo", {
@@ -48,25 +44,73 @@ export default function Page() {
         ></input>
         <p className="text-3xl">Add a new book to memo list.</p>
       </div>
-      <SearchResult books={data} addMemo={addMemo} />
+      <SearchPage
+        kw={debouncedValue}
+        page={page}
+        addMemo={addMemo}
+        setPage={setPage}
+      />
     </div>
   );
 }
 
-function SearchResult({
-  books,
+function SearchPage({
+  kw,
+  page,
+  setPage,
   addMemo,
 }: {
-  books: GoogleBook[] | undefined;
+  kw: string;
+  page: number;
+  setPage: (page: number) => void;
   addMemo: (googleBookId: string) => Promise<string>;
 }) {
+  const [maxPage, setMaxPage] = useState(0);
+  const { data, isLoading } = useSWR(
+    `/api/google_books?kw=${kw || "Karamazov"}&page=${page}`,
+    (url: string) =>
+      fetch(url, { method: "GET" })
+        .then((resp) => resp.json())
+        .then((resp) => {
+          return resp as { data: { books: GoogleBook[]; count: number } };
+        })
+  );
+
+  useEffect(() => {
+    if (data) {
+      setMaxPage(Math.ceil((data?.data.count ?? 0) / 20));
+    }
+  }, [data]);
+  if (isLoading) {
+    return <></>;
+  }
+  const pag = (
+    <ReactPaginate
+      previousLabel=<button className="join-item btn">{"<<"}</button>
+      nextLabel=<button className="join-item btn">{">>"}</button>
+      breakLabel="..."
+      breakClassName="join-item btn"
+      pageCount={maxPage}
+      forcePage={page - 1}
+      pageRangeDisplayed={5}
+      containerClassName="join self-end"
+      pageLinkClassName="join-item btn"
+      activeLinkClassName="btn btn-disabled"
+      onPageChange={(s) => {
+        setPage(s.selected + 1);
+      }}
+      renderOnZeroPageCount={null}
+    />
+  );
+
   return (
-    <div className="flex justify-center items-center">
+    <div className="flex justify-center flex-col items-center space-y-2">
       <div className="grid  gap-4 grid-cols-4">
-        {books?.map((ele) => (
+        {data?.data.books?.map((ele) => (
           <BookCard key={ele.id} googleBook={ele} addMemo={addMemo} />
         ))}
       </div>
+      {pag}
     </div>
   );
 }
@@ -81,7 +125,7 @@ function BookCard({
   const router = useRouter();
   const [disable, setDisable] = useState(false);
   return (
-    <div className="card w-72 shadow-xl">
+    <div className="card w-72 shadow-md">
       <figure className="h-2/5">
         <img
           src={googleBook.volumeInfo.imageLinks?.smallThumbnail}

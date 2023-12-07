@@ -3,42 +3,44 @@ import { NextRequest, NextResponse } from "next/server";
 import { env } from "process";
 import cache from "../cache/lru";
 
-const getCacheKey = (keyword: string) => {
-  return `google_book_keyword_${keyword}`;
-};
 async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const kw = searchParams.get("kw");
   if (!kw?.trim()) {
     return NextResponse.json({ data: { books: [] } });
   }
+  const page = parseInt(searchParams.get("page") || "1") || 1;
   const keywords: string = kw.replace(/ +/g, " ").replaceAll(" ", "+");
-  const requestUrl = `https://www.googleapis.com/books/v1/volumes?q=${keywords}&key=${env.GOOGLE_BOOK_API_KEY}`;
-  console.log("google book request", requestUrl);
+  const maxResults = 20;
+  const startIndex = (page - 1) * 20;
+  const orderBy = "relevance";
+  const requestUrl = `https://www.googleapis.com/books/v1/volumes?q=${keywords}&maxResults=${maxResults}&startIndex=${startIndex}&orderBy=${orderBy}&key=${env.GOOGLE_BOOK_API_KEY}`;
+  console.log(requestUrl);
 
-  const key = getCacheKey(kw);
   try {
-    console.log(1111);
-
-    const cached = cache.get(key);
+    const cached = cache.get(requestUrl);
     if (cached) {
-      console.log(2222);
       console.log("hit cached data");
-      return NextResponse.json({ data: { books: cached } });
+      return NextResponse.json({
+        data: cached,
+        hitCache: true,
+      });
     }
-    console.log(3333);
-    const volumes = await fetch(requestUrl, {
+    const data = await fetch(requestUrl, {
       method: "GET",
     })
       .then((resp) => resp.json())
-      .then((resp) => resp.items as GoogleBook[]);
-    console.log(4444);
-    cache.set(key, volumes);
-    console.log(5555);
-    return NextResponse.json({ data: { books: volumes } });
+      .then((resp) => ({
+        books: resp.items as GoogleBook[],
+        count:
+          (resp.totalItems as number) > 100 ? 100 : (resp.totalItems as number),
+      }));
+    cache.set(requestUrl, data);
+    return NextResponse.json({
+      data: data,
+    });
   } catch (error) {
     console.log("error", error);
-
     return NextResponse.error();
   }
 }
