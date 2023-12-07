@@ -1,14 +1,16 @@
 "use client";
 import { useTheme } from "next-themes";
 import cytoscape from "cytoscape";
-import { createElement, useEffect, useRef, useState } from "react";
+import { createElement, useContext, useEffect, useRef, useState } from "react";
 import rough from "roughjs";
 
 import { ZCOOL_KuaiLe } from "next/font/google";
 import { RoughSVG } from "roughjs/bin/svg";
 import { CharacterModal } from "../editors/character-modal";
 import ReactDOM from "react-dom";
-import CharacterEditerContextProvider from "../editors/character-context";
+import CharacterEditerContextProvider, {
+  CharacterEditerContext,
+} from "../editors/character-context";
 const font = ZCOOL_KuaiLe({ weight: "400", subsets: ["latin"] });
 
 export type Node = {
@@ -35,17 +37,17 @@ export default function Relation({
 }) {
   const { theme } = useTheme();
   const containerRef = useRef<SVGSVGElement | null>(null);
-  const testRef = useRef<HTMLDivElement | null>(null);
+  const calcRef = useRef<HTMLDivElement | null>(null);
   const nodeRadius = 50;
   const darkMode = theme === "dark";
   const [modalCharacterId, setModalCharacterId] = useState(NaN);
-  const [modalIsVisible, setmodalIsVisible] = useState(false);
+  const [modalIsVisible, setModalIsVisible] = useState(false);
 
   useEffect(() => {
     const baseColor = darkMode ? "white" : "black";
     const cy = cytoscape({
       elements: { nodes, edges },
-      container: testRef.current,
+      container: calcRef.current,
       layout: { name: "circle" },
       style: [
         {
@@ -68,7 +70,7 @@ export default function Relation({
         text: ele.attr("label") as string,
         onclick: (e: MouseEvent) => {
           setModalCharacterId(parseInt(ele.attr("id") as string, 10));
-          setmodalIsVisible(true);
+          setModalIsVisible(true);
         },
       });
       containerRef.current?.appendChild(node);
@@ -104,19 +106,55 @@ export default function Relation({
     <CharacterEditerContextProvider memoId={memoId}>
       <div className="w-full h-[600px] border-base-200 border-[2px] border-solid">
         <div className="w-full h-[600px]  relative">
+          <Op
+            setModalIsVisible={setModalIsVisible}
+            setModalCharacterId={setModalCharacterId}
+          ></Op>
           <svg ref={containerRef} className="w-full h-[600px] "></svg>
         </div>
         <div
-          ref={testRef}
+          ref={calcRef}
           className="absolute top-0 left-0 opacity-0 w-full h-[600px] z-[-100]"
         ></div>
+
         <CharacterModal
           id={modalCharacterId}
           isVisible={modalIsVisible}
-          setIsVisible={setmodalIsVisible}
+          setIsVisible={setModalIsVisible}
         />
       </div>
     </CharacterEditerContextProvider>
+  );
+}
+
+function Op({
+  setModalIsVisible,
+  setModalCharacterId,
+}: {
+  setModalIsVisible: (v: boolean) => void;
+  setModalCharacterId: (id: number) => void;
+}) {
+  return (
+    <div className="absolute flex top-0 right-0 w-[100px] h-[100px] z-[10] justify-center items-center">
+      <svg
+        onClick={() => {
+          setModalIsVisible(true);
+          setModalCharacterId(NaN);
+        }}
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={1.5}
+        stroke="currentColor"
+        className="w-6 h-6"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z"
+        />
+      </svg>
+    </div>
   );
 }
 
@@ -199,9 +237,6 @@ function createNode({
   f.setAttribute("x", position.x.toString());
   f.setAttribute("y", position.y.toString());
   f.setAttribute("style", "pointer-events: visible;");
-  f.onmousemove = (e: MouseEvent) => {
-    console.log("in");
-  };
   f.onclick = onclick;
   f.appendChild(nodeEle);
   f.appendChild(textEle);

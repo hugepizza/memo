@@ -56,10 +56,6 @@ export default function Page({ params }: { params: { id: string } }) {
         nodes={nodes || ([] as Node[])}
       ></Relation>
       {/* <Events events={memo?.events as Event[]} /> */}
-      <CharacterEditor
-        memoId={memo.id}
-        characters={memo.characters || ([] as Character[])}
-      />
       <RelationEditor
         memoId={memo.id}
         characters={memo.characters}

@@ -15,9 +15,8 @@ export function CharacterModal({
   isVisible: boolean;
   setIsVisible: (v: boolean) => void;
 }) {
-  const { isRequesting, updateCharacter, deleteCharacter } = useContext(
-    CharacterEditerContext
-  );
+  const { isRequesting, updateCharacter, deleteCharacter, addCharacter } =
+    useContext(CharacterEditerContext);
   console.log("updateCharacter", updateCharacter);
 
   const [name, setName] = useState("");
@@ -25,6 +24,8 @@ export function CharacterModal({
   const [memoId, setMemoId] = useState("");
   const { data } = useSWR("/api/character/" + id.toString(), (url) => {
     if (isNaN(id)) {
+      setName("");
+      setRemark("");
       return null;
     }
     return fetch(url, { method: "GET" })
@@ -54,6 +55,7 @@ export function CharacterModal({
           <input
             type="text"
             className="input bg-base-200"
+            placeholder={isNaN(id) ? "new character name" : ""}
             value={name}
             onChange={(e) => setName(e.currentTarget.value)}
           ></input>
@@ -67,23 +69,28 @@ export function CharacterModal({
         <div className="modal-action">
           <form method="dialog">
             <div className="space-x-2">
-              <button
-                className={`btn ${
-                  isRequesting ? "btn-disabled" : "btn-warning"
-                }`}
-                onClick={() => {
-                  deleteCharacter(id)
-                    .then(() => toast.success("Deleted!"))
-                    .then(() => setIsVisible(false))
-                    .catch((e) => toast.error("Deleted failed!"));
-                }}
-              >
-                Delete
-              </button>
+              {!isNaN(id) && (
+                <button
+                  className={`btn ${
+                    isRequesting ? "btn-disabled" : "btn-warning"
+                  }`}
+                  onClick={() => {
+                    deleteCharacter(id)
+                      .then(() => toast.success("Deleted!"))
+                      .then(() => setIsVisible(false))
+                      .catch((e) => toast.error("Deleted failed!"));
+                  }}
+                >
+                  Delete
+                </button>
+              )}
               <button
                 className={`btn ${isRequesting ? "btn-disabled" : ""}`}
                 onClick={() => {
-                  updateCharacter(id, name, remark)
+                  (isNaN(id)
+                    ? addCharacter(memoId, name, remark)
+                    : updateCharacter(id, name, remark)
+                  )
                     .then(() => toast.success("Saved!"))
                     .then(() => setIsVisible(false))
                     .catch((e) => toast.error("Saved failed!"));
