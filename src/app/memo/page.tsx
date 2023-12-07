@@ -5,13 +5,16 @@ import Link from "next/link";
 import { Memo } from "../tpyes/model";
 import { useEffect, useState } from "react";
 import ReactPaginate from "react-paginate";
+import Search from "../components/navbar/search";
 
-const elementWidth = 240;
 export default function Page() {
   const [pageIndex, setPageIndex] = useState(1);
 
   return (
     <div className="flex flex-col justify-center w-full space-y-2">
+      <div className="block sm:hidden">
+        <Search></Search>
+      </div>
       <AddButton />
       <div className="flex flex-col justify-center w-full">
         <MemoPage page={pageIndex} setPage={setPageIndex} />
@@ -66,7 +69,7 @@ function MemoPage({
   if (isLoading) {
     return (
       <>
-        <div className="grid gap-4 grid-cols-4 w-full">
+        <div className="grid grid-cols-1 sm:gap-4 sm:grid-cols-4 w-full">
           <SkeletonGroup />
         </div>
         {pag}
@@ -75,7 +78,7 @@ function MemoPage({
   }
   return (
     <>
-      <div className="grid gap-4 grid-cols-4 w-full">
+      <div className="grid grid-cols-1 sm:gap-4 sm:grid-cols-4 w-full">
         {data?.memo.map((ele) => (
           <MemoCard key={ele.id} memo={ele} />
         ))}
@@ -87,15 +90,11 @@ function MemoPage({
 
 function MemoCard({ memo }: { memo: Memo }) {
   return (
-    <Link
-      className="col-span-1 min-w-0 flex-grow"
-      style={{ width: elementWidth, height: elementWidth * 1.5 }}
-      href={"/memo/" + memo.id}
-    >
+    <Link className="flex-grow h-96" href={"/memo/" + memo.id}>
       <figure className="w-full h-4/5 relative">
         <Image
           className="rounded-2xl"
-          src={memo.works.smallThumbnail || memo.works.thumbnail || ""}
+          src={memo.works.thumbnail || memo.works.smallThumbnail || ""}
           alt={memo.works.title}
           layout="fill"
           style={{ objectFit: "cover", objectPosition: "center" }}
@@ -113,17 +112,11 @@ function MemoCard({ memo }: { memo: Memo }) {
 
 function SkeletonGroup() {
   const skeleton = (
-    <div className="flex flex-col">
-      <div
-        className="skeleton col-span-1 flex-grow"
-        style={{ width: elementWidth, height: elementWidth * 1.5 * 0.8 }}
-      ></div>
-      <div
-        className="flex flex-col space-y-1 py-1"
-        style={{ width: elementWidth, height: elementWidth * 1.5 * 0.2 }}
-      >
-        <div className="skeleton w-full grow"></div>
-        <div className="skeleton w-full grow"></div>
+    <div className="h-96">
+      <div className="skeleton flex-grow h-4/5"></div>
+      <div className="flex flex-col space-y-1 py-1 w-full h-1/5">
+        <div className="skeleton w-4/5 grow"></div>
+        <div className="skeleton w-4/6 grow"></div>
       </div>
     </div>
   );

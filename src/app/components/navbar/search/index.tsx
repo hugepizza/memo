@@ -65,7 +65,7 @@ function SearchInput({ mode }: { mode: SearchMode }) {
       <input
         placeholder={"Search Memo By"}
         type="text"
-        className="input bg-base-200 pr-32"
+        className="input bg-base-200 w-full"
         value={kw}
         onFocus={() => {
           if (kw.trim()) setSuggestion(true);

@@ -12,7 +12,7 @@ export default function Navbar() {
           Memo
         </Link>
       </div>
-      <div className="navbar-center">
+      <div className="navbar-center hidden sm:block sm:w-[30vw]">
         <Search />
       </div>
       <div className="navbar-end">

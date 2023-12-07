@@ -39,7 +39,8 @@ export default function Relation({
   const { theme } = useTheme();
   const containerRef = useRef<SVGSVGElement | null>(null);
   const calcRef = useRef<HTMLDivElement | null>(null);
-  const nodeRadius = 50;
+  const nodeRadius = window.innerWidth >= 768 ? 48 : 18;
+
   const darkMode = theme === "dark";
   const [modalCharacterId, setModalCharacterId] = useState(NaN);
   const [modalIsVisible, setModalIsVisible] = useState(false);
@@ -110,7 +111,7 @@ export default function Relation({
     <CharacterEditerContextProvider memoId={memoId}>
       <div className="w-full h-[600px] border-base-200 border-[1px] border-solid">
         {/* for rendering svg */}
-        <div className="w-full h-[600px]  relative">
+        <div className="w-full h-[600px] relative">
           <Op
             downloadElementRef={containerRef}
             setModalIsVisible={setModalIsVisible}
@@ -237,10 +238,10 @@ function createNodeText({
   color?: string;
 }) {
   const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-  text.setAttribute("x", (position.x + (spacing ?? 0)).toString());
-  text.setAttribute("y", position.y.toString());
+  text.setAttribute("x", (position.x - (spacing ?? 0)).toString());
+  text.setAttribute("y", (position.y - (spacing ?? 0)).toString());
   text.setAttribute("font-family", font.style.fontFamily);
-  text.setAttribute("font-size", "18px");
+  text.setAttribute("font-size", window.innerWidth >= 678 ? "18px" : "12px");
   if (color) {
     text.setAttribute("fill", color);
   }
@@ -251,9 +252,9 @@ function createNodeText({
 function createTitle({ content, color }: { content: string; color?: string }) {
   const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
   text.setAttribute("x", "5");
-  text.setAttribute("y", "36");
+  text.setAttribute("y", "24");
   text.setAttribute("font-family", font.style.fontFamily);
-  text.setAttribute("font-size", "36px");
+  text.setAttribute("font-size", window.innerWidth >= 678 ? "24px" : "16px");
   if (color) {
     text.setAttribute("fill", color);
   }
@@ -280,7 +281,7 @@ function createLineText({
   text.setAttribute("x", (midX + (spacing ?? 0)).toString());
   text.setAttribute("y", midY.toString());
   text.setAttribute("font-family", "Arial");
-  text.setAttribute("font-size", "18px");
+  text.setAttribute("font-size", window.innerWidth >= 678 ? "18px" : "12px");
   if (color) {
     text.setAttribute("fill", color);
   }

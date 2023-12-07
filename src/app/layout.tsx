@@ -16,7 +16,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={"w-full h-full "}>
-      <body className="suppressHydrationWarning w-full h-full px-32">
+      <body className="suppressHydrationWarning w-full h-full px-2 sm:px-32">
         <NextThemeProvider>
           <ThemeWrapper>
             <Navbar />

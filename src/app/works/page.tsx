@@ -5,12 +5,13 @@ import { useEffect, useState } from "react";
 import useSWR from "swr";
 import { GoogleBook } from "../tpyes/model";
 import logo from "../../../public/search-logo.svg";
+import darkLogo from "../../../public/search-logo-dark.svg";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import "./page.style.css";
-import { number } from "zod";
 import ReactPaginate from "react-paginate";
+import { useTheme } from "next-themes";
 
 export default function Page() {
   const [kw, setKw] = useState("");
@@ -31,10 +32,11 @@ export default function Page() {
     }
     return data.data.memoId;
   };
+  const { theme } = useTheme();
   return (
     <div className="flex flex-col w-full h-auto">
-      <div className="flex flex-col justify-center items-center min-h-[300px] grow">
-        <Image priority src={logo} alt="Logo" />
+      <div className="flex flex-col justify-center items-center  grow">
+        <Image priority src={theme === "dark" ? darkLogo : logo} alt="Logo" />
         <input
           className="input input-bordered focus:outline-none border-solid w-full"
           value={kw}
@@ -42,7 +44,7 @@ export default function Page() {
             setKw(e.currentTarget.value);
           }}
         ></input>
-        <p className="text-3xl">Add a new book to memo list.</p>
+        <p className="sm:text-3xl">Add a new book to memo list.</p>
       </div>
       <SearchPage
         kw={debouncedValue}
@@ -105,7 +107,7 @@ function SearchPage({
 
   return (
     <div className="flex justify-center flex-col items-center space-y-2">
-      <div className="grid  gap-4 grid-cols-4">
+      <div className="grid sm:gap-4 sm:grid-cols-4 grid-cols-1">
         {data?.data.books?.map((ele) => (
           <BookCard key={ele.id} googleBook={ele} addMemo={addMemo} />
         ))}
@@ -125,10 +127,13 @@ function BookCard({
   const router = useRouter();
   const [disable, setDisable] = useState(false);
   return (
-    <div className="card w-72 shadow-md">
-      <figure className="h-2/5">
+    <div className="card shadow-md">
+      <figure className="h-2/5 mt-2">
         <img
-          src={googleBook.volumeInfo.imageLinks?.smallThumbnail}
+          src={
+            googleBook.volumeInfo.imageLinks?.thumbnail ||
+            googleBook.volumeInfo.imageLinks?.smallThumbnail
+          }
           alt={googleBook.volumeInfo.title}
         />
       </figure>

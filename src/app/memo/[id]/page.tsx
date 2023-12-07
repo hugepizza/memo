@@ -56,11 +56,11 @@ export default function Page({ params }: { params: { id: string } }) {
         nodes={nodes || ([] as Node[])}
       ></Relation>
       {/* <Events events={memo?.events as Event[]} /> */}
-      <RelationEditor
+      {/* <RelationEditor
         memoId={memo.id}
         characters={memo.characters}
         relations={memo.characterRelations || ([] as RelationType[])}
-      />
+      /> */}
     </div>
   );
 }
