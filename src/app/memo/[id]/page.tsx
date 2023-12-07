@@ -49,8 +49,8 @@ export default function Page({ params }: { params: { id: string } }) {
 
   return (
     <div className="w-full flex flex-col">
-      <p>{memo?.works.title}</p>
       <Relation
+        title={memo.worksTitle}
         memoId={memo.id}
         edges={edges || ([] as Edge[])}
         nodes={nodes || ([] as Node[])}
