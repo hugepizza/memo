@@ -1,7 +1,7 @@
 "use client";
 
 import CharacterEditor from "@/app/components/editors/character";
-import Relation, { Edge, Node } from "@/app/components/graphs/relation";
+import Relation, { MetaEdge, MetaNode } from "@/app/components/graphs/relation";
 import useSWR from "swr";
 import { notFound } from "next/navigation";
 import RelationEditor from "@/app/components/editors/relation";
@@ -33,7 +33,7 @@ export default function Page({ params }: { params: { id: string } }) {
   }));
   const edges = memo?.characterRelations?.map((e) => ({
     data: {
-      id: `r-${e.id}`,
+      id: `${e.id}`,
       label: e.name ?? "",
       source: `${e.sourceCharacter?.id}`,
       target: `${e.targetCharacter?.id}`,
@@ -52,15 +52,15 @@ export default function Page({ params }: { params: { id: string } }) {
       <Relation
         title={memo.worksTitle}
         memoId={memo.id}
-        edges={edges || ([] as Edge[])}
-        nodes={nodes || ([] as Node[])}
+        edges={edges || ([] as MetaEdge[])}
+        nodes={nodes || ([] as MetaNode[])}
       ></Relation>
       {/* <Events events={memo?.events as Event[]} /> */}
-      {/* <RelationEditor
+      <RelationEditor
         memoId={memo.id}
         characters={memo.characters}
         relations={memo.characterRelations || ([] as RelationType[])}
-      /> */}
+      />
     </div>
   );
 }
