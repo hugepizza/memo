@@ -6,6 +6,7 @@ import { Memo } from "../tpyes/model";
 import { useEffect, useState } from "react";
 import ReactPaginate from "react-paginate";
 import Search from "../components/navbar/search";
+import "../globals.css";
 
 export default function Page() {
   const [pageIndex, setPageIndex] = useState(1);
@@ -91,15 +92,24 @@ function MemoPage({
 function MemoCard({ memo }: { memo: Memo }) {
   return (
     <Link className="flex-grow h-96" href={"/memo/" + memo.id + "#graph"}>
-      <figure className="w-full h-4/5 relative">
-        <Image
-          className="rounded-2xl"
-          src={memo.works.thumbnail || memo.works.smallThumbnail || ""}
-          alt={memo.works.title}
-          layout="fill"
-          style={{ objectFit: "cover", objectPosition: "center" }}
-        />
-      </figure>
+      {memo.works.thumbnail || memo.works.smallThumbnail ? (
+        <figure className="w-full h-4/5 relative">
+          <Image
+            className="rounded-2xl"
+            src={memo.works.thumbnail || memo.works.smallThumbnail || ""}
+            alt={memo.works.title}
+            layout="fill"
+            style={{ objectFit: "cover", objectPosition: "center" }}
+          />
+        </figure>
+      ) : (
+        <div className="bg-gradient-to-br from-blue-500 to-red-500 flex w-full h-4/5 px-8 rounded-2xl justify-center items-center text-center bookCover">
+          <span className="text-3xl font-semibold justify-center items-center">
+            {memo.worksTitle}
+          </span>
+        </div>
+      )}
+
       <p className="truncate">{memo.works.title}</p>
       <div className="flex flex-row justify-end space-x-2">
         <CharacterIcon count={memo.characters.length} />

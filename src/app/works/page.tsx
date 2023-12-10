@@ -65,7 +65,7 @@ export default function Page() {
               clipRule="evenodd"
             />
           </svg>
-          Or add a custom memo
+          <p className="my-4">Or add a custom memo</p>
         </div>
       </div>
       <SearchPage
