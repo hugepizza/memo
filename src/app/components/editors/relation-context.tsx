@@ -1,11 +1,10 @@
-import { Character, Relation } from "@/app/tpyes/model";
+import { Memo } from "@/app/tpyes/model";
 import { createContext, ReactNode, useState } from "react";
 import { useSWRConfig } from "swr";
 
 interface RelationEditerContextProps {
   memoId: string;
-  characters: Character[];
-  relations: Relation[];
+  memo: Memo;
   addRelation: (
     memoId: string,
     sourceId: number,
@@ -21,19 +20,17 @@ interface RelationEditerContextProps {
   deleteRelation: (relationId: number) => Promise<void>;
   isRequesting: boolean;
 }
-export const EditerContext = createContext<RelationEditerContextProps>(
+export const RelationEditerContext = createContext<RelationEditerContextProps>(
   {} as RelationEditerContextProps
 );
 
 export default function RelationEditerContextProvider({
   memoId,
-  characters,
-  relations,
+  memo,
   children,
 }: {
   memoId: string;
-  characters: Character[];
-  relations: Relation[];
+  memo: Memo;
   children: ReactNode;
 }) {
   const [isRequesting, setIsRequesting] = useState(false);
@@ -106,8 +103,7 @@ export default function RelationEditerContextProvider({
 
   const contextValue = {
     memoId,
-    characters,
-    relations,
+    memo,
     updateRelation,
     addRelation,
     deleteRelation,
@@ -115,8 +111,8 @@ export default function RelationEditerContextProvider({
   };
 
   return (
-    <EditerContext.Provider value={contextValue}>
+    <RelationEditerContext.Provider value={contextValue}>
       {children}
-    </EditerContext.Provider>
+    </RelationEditerContext.Provider>
   );
 }

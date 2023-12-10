@@ -22,7 +22,6 @@ export function CharacterModal({
     deleteCharacter,
     addCharacter,
   } = useContext(CharacterEditerContext);
-  console.log("updateCharacter", updateCharacter);
 
   const [name, setName] = useState("");
   const [remark, setRemark] = useState("");

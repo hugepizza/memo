@@ -1,8 +1,6 @@
 import { createElement, useEffect, useState } from "react";
 import { MetaEdge, MetaNode } from ".";
 import {
-  create,
-  drag,
   forceCenter,
   forceCollide,
   forceLink,
@@ -35,6 +33,7 @@ export function useD3Network({
 }) {
   const [ndata, setNdata] = useState<NodeData[]>([]);
   const [ldata, setLdata] = useState<LinkData[]>([]);
+
   useEffect(() => {
     const nodes: D3Node[] = metaNodes.map((e, i) => ({
       index: i,
@@ -56,7 +55,6 @@ export function useD3Network({
         };
       })
       .filter((e) => e !== undefined);
-
     const container = document.createElementNS(
       "http://www.w3.org/2000/svg",
       "svg"
@@ -69,7 +67,7 @@ export function useD3Network({
       .attr("width", width)
       .attr("height", height)
       .attr("viewBox", [0, 0, width, height])
-      .attr("style", "max-width: 100%; height: auto;");
+      .attr("style", "max-width: 100%; max-height: 100%;");
 
     const linkEles = svg.append("g").selectAll().data(links).join("line");
 
@@ -89,7 +87,6 @@ export function useD3Network({
         .attr("y1", (d) => d.source.y)
         .attr("x2", (d) => d.target.x)
         .attr("y2", (d) => d.target.y);
-      console.log("linkEles");
 
       setNdata(nodeEles.data().map((e) => ({ id: e.id, x: e.x, y: e.y })));
       setLdata(
@@ -123,13 +120,13 @@ export function useD3Network({
         forceLink(links).id((d: any) => d.id)
       )
       .force("charge", forceManyBody())
-      .force("collide", forceCollide().radius(100)) // 调整 radius 的值
+      .force("collide", forceCollide().radius(70)) // 调整 radius 的值
       .force("x", forceX().strength(0.1).x(width))
       .force("y", forceY().strength(0.1).y(height))
       .force("center", forceCenter(width / 2, height / 2))
       .on("tick", ticked)
       .on("end", () => {});
     simulation.alphaMin(0.1);
-  }, [width, height, metaNodes, metaEdges]);
+  }, [width, height, metaEdges, metaNodes]);
   return { d3NodeData: ndata, d3EdgeData: ldata };
 }

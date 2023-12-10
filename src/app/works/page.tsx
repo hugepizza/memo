@@ -34,7 +34,7 @@ export default function Page() {
   };
   const { theme } = useTheme();
   return (
-    <div className="flex flex-col w-full h-auto">
+    <div className="flex flex-col w-full h-auto px-2 sm:px-32">
       <div className="flex flex-col justify-center items-center  grow">
         <Image priority src={theme === "dark" ? darkLogo : logo} alt="Logo" />
         <input

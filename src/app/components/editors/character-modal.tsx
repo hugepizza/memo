@@ -3,9 +3,7 @@ import "../../globals.css";
 import useSWR from "swr";
 import { Character } from "@/app/tpyes/model";
 import toast from "react-hot-toast";
-import CharacterEditerContextProvider, {
-  CharacterEditerContext,
-} from "./character-context";
+import { CharacterEditerContext } from "./character-context";
 export function CharacterModal({
   id,
   isVisible,
@@ -22,7 +20,6 @@ export function CharacterModal({
     deleteCharacter,
     addCharacter,
   } = useContext(CharacterEditerContext);
-  console.log("updateCharacter", updateCharacter);
 
   const [name, setName] = useState("");
   const [remark, setRemark] = useState("");

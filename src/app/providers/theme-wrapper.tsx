@@ -8,7 +8,7 @@ export default function ThemeWrapper({ children }: { children: ReactNode }) {
   const onDark = theme === "dark";
 
   return (
-    <main>
+    <main className="">
       {onDark ? (
         <Toaster
           toastOptions={{ style: { background: "#333", color: "#fff" } }}

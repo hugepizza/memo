@@ -65,6 +65,7 @@ function createLineText({
 
   text.setAttribute("x", (midX + (spacing ?? 0)).toString());
   text.setAttribute("y", midY.toString());
+  text.setAttribute("z-index", "-1");
   text.setAttribute("font-family", "Arial");
   text.setAttribute("font-size", window.innerWidth >= 678 ? "18px" : "12px");
   if (color) {
@@ -107,6 +108,11 @@ export function createNode({
   f.onclick = onclick;
   f.appendChild(nodeEle);
   f.appendChild(textEle);
+
+  // const tooltip = document.createElement("div");
+  // tooltip.setAttribute("className", "tooltip");
+  // tooltip.setAttribute("data-tip", "12123");
+  // tooltip.append(f);
   return f;
 }
 
@@ -116,12 +122,14 @@ export function createLine({
   color,
   text,
   nodeRadius,
+  onclick,
 }: {
   rc: RoughSVG;
   position: { x1: number; y1: number; x2: number; y2: number };
   color: string;
   text: string;
   nodeRadius: number;
+  onclick: (e: MouseEvent) => void;
 }) {
   const lineEle = rc.line(position.x1, position.y1, position.x2, position.y2, {
     stroke: color,
@@ -139,5 +147,6 @@ export function createLine({
   f.setAttribute("y", "100");
   f.appendChild(lineEle);
   f.appendChild(textEle);
+  f.onclick = onclick;
   return f;
 }

@@ -1,9 +1,10 @@
-import { Character, Relation } from "@/app/tpyes/model";
+import { Character, Memo, Relation } from "@/app/tpyes/model";
 import { createContext, ReactNode, useState } from "react";
 import { useSWRConfig } from "swr";
 
 interface CharacterEditerContextProps {
   memoId: string;
+  memo: Memo;
   addCharacter: (memoId: string, name: string, remark: string) => Promise<void>;
   updateCharacter: (
     characterId: number,
@@ -18,9 +19,11 @@ export const CharacterEditerContext =
 
 export default function CharacterEditerContextProvider({
   memoId,
+  memo,
   children,
 }: {
   memoId: string;
+  memo: Memo;
   children: ReactNode;
 }) {
   const [isRequesting, setIsRequesting] = useState(false);
@@ -85,12 +88,12 @@ export default function CharacterEditerContextProvider({
 
   const contextValue = {
     memoId,
+    memo,
     addCharacter,
     updateCharacter,
     deleteCharacter,
     isRequesting,
   };
-  console.log("contextValue", contextValue);
 
   return (
     <CharacterEditerContext.Provider value={contextValue}>

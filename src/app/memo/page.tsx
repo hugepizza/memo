@@ -11,7 +11,7 @@ export default function Page() {
   const [pageIndex, setPageIndex] = useState(1);
 
   return (
-    <div className="flex flex-col justify-center w-full space-y-2">
+    <div className="flex flex-col justify-center w-full space-y-2 px-2 sm:px-32">
       <div className="block sm:hidden">
         <Search></Search>
       </div>
@@ -90,7 +90,7 @@ function MemoPage({
 
 function MemoCard({ memo }: { memo: Memo }) {
   return (
-    <Link className="flex-grow h-96" href={"/memo/" + memo.id}>
+    <Link className="flex-grow h-96" href={"/memo/" + memo.id + "#graph"}>
       <figure className="w-full h-4/5 relative">
         <Image
           className="rounded-2xl"
