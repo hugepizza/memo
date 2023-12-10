@@ -122,7 +122,7 @@ function CustomModal() {
     <dialog id="custom_memo" className="modal">
       <div className="modal-box space-y-2">
         <h3 className="font-bold text-lg">
-          Hello! Your're creating a custom memo
+          {"Hello! Your're creating a custom memo"}
         </h3>
         <input
           type="text"
