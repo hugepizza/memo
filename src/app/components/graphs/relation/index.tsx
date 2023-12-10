@@ -1,25 +1,15 @@
 "use client";
 import { useTheme } from "next-themes";
-import cytoscape from "cytoscape";
-import { Canvg } from "canvg";
 
-import {
-  MutableRefObject,
-  createElement,
-  use,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import rough from "roughjs";
 
-import { CharacterEditerContext } from "../../editors/character-context";
+import { CharacterEditerContext } from "../../editors/providers/character-provider";
 import { createNode, createLine, createTitle } from "../rough";
 import { useD3Network } from "./d3";
-import { Drawer } from "../../editors/drawer";
+import { Drawer } from "../../editors/character/drawer";
 import { Pannal } from "./pannel";
+import { RelationModal } from "../../editors/relation/modal";
 
 export type MetaNode = {
   data: { id: string; label: string; remark?: string };
@@ -43,6 +33,9 @@ export default function Relation() {
   const screenWidth = document.documentElement.clientWidth;
   const screenHeight = document.documentElement.clientHeight;
   const nodeRadius = window.innerWidth >= 768 ? 28 : 18;
+  const [forceRadius, setForceRadius] = useState(
+    window.innerWidth >= 768 ? 80 : 60
+  );
 
   const { memo } = useContext(CharacterEditerContext);
   console.log("Memo reference:", memo);
@@ -72,19 +65,16 @@ export default function Relation() {
     metaEdges,
     width: screenWidth,
     height: screenHeight,
+    forceRadius: forceRadius,
   });
 
   const darkMode = theme === "dark";
-  const [editingMode, setEditingMode] = useState<"character" | "relation">(
-    "character"
-  );
   const [editingCharacterId, setEditingCharacterId] = useState<string | null>(
     null
   );
-  const [editingRelationId, setEditingRelationId] = useState<string | null>(
-    null
-  );
-  const [eitorIsVisible, setEditorIsVisible] = useState(false);
+  const [editingRelationId, setEditingRelationId] = useState<string>("");
+  const [drawerIsVisible, setDrawerIsVisible] = useState(false);
+  const [modalIsVisible, setModalIsVisible] = useState(false);
   const [edgeClolrs, setEdgeClolrs] = useState<Map<string, string>>(
     new Map<string, string>()
   );
@@ -111,6 +101,59 @@ export default function Relation() {
     const baseColor = darkMode ? "white" : "black";
     const rc = rough.svg(containerRef.current!);
 
+    const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+
+    const filter = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "filter"
+    );
+    filter.setAttribute("id", "texture");
+    filter.setAttribute("x", "0");
+    filter.setAttribute("y", "0");
+    filter.setAttribute("height", "100%");
+    filter.setAttribute("width", "100%");
+
+    const feTurbulence = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "feTurbulence"
+    );
+    feTurbulence.setAttribute("type", "fractalNoise");
+    feTurbulence.setAttribute("baseFrequency", "0.01");
+    feTurbulence.setAttribute("numOctaves", "5");
+    feTurbulence.setAttribute("result", "noise");
+
+    const feDisplacementMap = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "feDisplacementMap"
+    );
+    feDisplacementMap.setAttribute("in", "SourceGraphic");
+    feDisplacementMap.setAttribute("in2", "noise");
+    feDisplacementMap.setAttribute("scale", "10");
+
+    const feComponentTransfer = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "feComponentTransfer"
+    );
+    const feFuncA = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "feFuncA"
+    );
+    feFuncA.setAttribute("type", "table");
+    feFuncA.setAttribute("tableValues", "0,0.2,0.4,0.6,0.8,1");
+    feComponentTransfer.append(feFuncA);
+
+    const bg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    bg.setAttribute("height", "100%");
+    bg.setAttribute("width", "100%");
+    bg.setAttribute("fill", "#FEFAE0");
+    bg.setAttribute("filter", "url(#texture)");
+    filter.append(feTurbulence);
+    filter.append(feDisplacementMap);
+    filter.append(feComponentTransfer);
+    defs.append(filter);
+
+    containerRef.current?.append(defs);
+    containerRef.current?.append(bg);
     const nnodes = d3NodeData.map((e) => {
       const node = createNode({
         rc,
@@ -119,9 +162,8 @@ export default function Relation() {
         color: baseColor,
         text: metaNodes.find((ef) => ef.data.id === e.id)?.data.label ?? "",
         onclick: (evt: MouseEvent) => {
-          setEditingMode("character");
           setEditingCharacterId(e.id);
-          setEditorIsVisible(true);
+          setDrawerIsVisible(true);
         },
       });
 
@@ -145,9 +187,8 @@ export default function Relation() {
         text: metaEdges.find((ef) => ef.data.id === e.id)?.data.label ?? "",
         nodeRadius: nodeRadius,
         onclick: (evt: MouseEvent) => {
-          setEditingMode("relation");
           setEditingRelationId(e.id);
-          setEditorIsVisible(true);
+          setModalIsVisible(true);
         },
       });
       return lines;
@@ -175,20 +216,49 @@ export default function Relation() {
       >
         <Pannal
           downloadElementRef={containerRef}
-          setEditorIsVisible={setEditorIsVisible}
+          setEditorIsVisible={setDrawerIsVisible}
           setEditingCharacterId={setEditingCharacterId}
+          forceRadius={forceRadius}
+          setForceRadius={setForceRadius}
         ></Pannal>
-        <svg
-          ref={containerRef}
-          style={{ width: screenWidth, height: screenHeight }}
-        ></svg>
+        {memo.characters.length > 0 ? (
+          <svg
+            ref={containerRef}
+            style={{ width: screenWidth, height: screenHeight }}
+          ></svg>
+        ) : (
+          <div className="hero min-h-screen bg-base-200">
+            <div className="hero-content text-center">
+              <div className="max-w-md">
+                <h1 className="text-5xl font-bold">Create a character</h1>
+                <p className="py-6">
+                  Memo graph is started with two characters and a relationship
+                  between them, create your characters and them connect them by
+                  relation.
+                </p>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => {
+                    setDrawerIsVisible(true);
+                  }}
+                >
+                  Start
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       <Drawer
         characterId={editingCharacterId}
-        isVisible={eitorIsVisible}
-        setIsVisible={setEditorIsVisible}
-        mode={editingMode}
+        isVisible={drawerIsVisible}
+        setIsVisible={setDrawerIsVisible}
       ></Drawer>
+      <RelationModal
+        relationId={editingRelationId}
+        isVisible={modalIsVisible}
+        setIsVisible={setModalIsVisible}
+      ></RelationModal>
     </div>
   );
 }

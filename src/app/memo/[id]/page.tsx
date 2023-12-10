@@ -4,8 +4,8 @@ import Relation from "@/app/components/graphs/relation";
 import useSWR from "swr";
 import { notFound } from "next/navigation";
 import { Memo } from "@/app/tpyes/model";
-import CharacterEditerContextProvider from "@/app/components/editors/character-context";
-import RelationEditerContextProvider from "@/app/components/editors/relation-context";
+import CharacterEditerContextProvider from "@/app/components/editors/providers/character-provider";
+import RelationEditerContextProvider from "@/app/components/editors/providers/relation-provider";
 
 export default function Page({ params }: { params: { id: string } }) {
   const { data: memo, isLoading } = useSWR(

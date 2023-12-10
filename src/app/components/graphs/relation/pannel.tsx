@@ -5,10 +5,14 @@ export function Pannal({
   downloadElementRef,
   setEditorIsVisible,
   setEditingCharacterId,
+  forceRadius,
+  setForceRadius,
 }: {
   downloadElementRef: MutableRefObject<SVGSVGElement | null>;
   setEditorIsVisible: (v: boolean) => void;
   setEditingCharacterId: (id: string | null) => void;
+  forceRadius: number;
+  setForceRadius: (r: number) => void;
 }) {
   const download = async () => {
     console.log("downloadElement", downloadElementRef.current);
@@ -42,10 +46,26 @@ export function Pannal({
   };
 
   return (
-    <div className="absolute flex top-0 right-0 w-[100px] h-[100px] z-[10]">
-      <div className="flex flex-row space-x-1">
+    <div className="w-10/12 sm:w-auto fixed flex bottom-10 left-1/2 transform -translate-x-1/2 flex-row z-[10] space-x-6 bg-base-200 px-6 py-4 rounded-3xl items-center">
+      <div>
+        <div className="flex flex-col items-center space-y-1">
+          <input
+            type="range"
+            min={20}
+            max={100}
+            value={forceRadius}
+            className="range range-xs"
+            step="20"
+            onChange={(e) =>
+              setForceRadius(parseInt(e.currentTarget.value, 10))
+            }
+          />
+          <span className="text-xs text-neutral-500">Gap</span>
+        </div>
+      </div>
+      <div className="flex flex-col items-center space-y-1">
         <button
-          className="btn btn-circle"
+          className="btn btn-sm btn-ghost btn-circle"
           onClick={() => {
             setEditorIsVisible(true);
             setEditingCharacterId(null);
@@ -53,40 +73,33 @@ export function Pannal({
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-6 h-6"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            className="w-5 h-5"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
-            />
+            <path d="M5.433 13.917l1.262-3.155A4 4 0 017.58 9.42l6.92-6.918a2.121 2.121 0 013 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 01-.65-.65z" />
+            <path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0010 3H4.75A2.75 2.75 0 002 5.75v9.5A2.75 2.75 0 004.75 18h9.5A2.75 2.75 0 0017 15.25V10a.75.75 0 00-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5z" />
           </svg>
         </button>
+        <span className="text-xs text-neutral-500">Edit</span>
+      </div>
+      <div className="flex flex-col items-center space-y-1">
         <button
-          className="btn btn-circle"
+          className="btn btn-sm btn-ghost btn-circle"
           onClick={() => {
             download();
           }}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-6 h-6"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            className="w-5 h-5"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
-            />
+            <path d="M13.75 7h-3v5.296l1.943-2.048a.75.75 0 011.114 1.004l-3.25 3.5a.75.75 0 01-1.114 0l-3.25-3.5a.75.75 0 111.114-1.004l1.943 2.048V7h1.5V1.75a.75.75 0 00-1.5 0V7h-3A2.25 2.25 0 004 9.25v7.5A2.25 2.25 0 006.25 19h7.5A2.25 2.25 0 0016 16.75v-7.5A2.25 2.25 0 0013.75 7z" />
           </svg>
         </button>
+        <span className="text-xs text-neutral-500">Download</span>
       </div>
     </div>
   );

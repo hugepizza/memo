@@ -66,8 +66,8 @@ function createLineText({
   text.setAttribute("x", (midX + (spacing ?? 0)).toString());
   text.setAttribute("y", midY.toString());
   text.setAttribute("z-index", "-1");
-  text.setAttribute("font-family", "Arial");
-  text.setAttribute("font-size", window.innerWidth >= 678 ? "18px" : "12px");
+  text.setAttribute("font-family", font.style.fontFamily);
+  text.setAttribute("font-size", window.innerWidth >= 678 ? "16px" : "10px");
   if (color) {
     text.setAttribute("fill", color);
   }
@@ -90,6 +90,8 @@ export function createNode({
   text: string;
   onclick: (e: MouseEvent) => void;
 }) {
+  console.log("createNode", rc, position);
+
   const nodeEle = rc.circle(position.x, position.y, radius, {
     stroke: color,
     fill: color,
@@ -103,8 +105,6 @@ export function createNode({
   const f = document.createElementNS("http://www.w3.org/2000/svg", "g");
   f.setAttribute("x", position.x.toString());
   f.setAttribute("y", position.y.toString());
-  f.setAttribute("style", "pointer-events: visible;");
-  f.setAttribute("abc", text);
   f.onclick = onclick;
   f.appendChild(nodeEle);
   f.appendChild(textEle);
@@ -139,14 +139,13 @@ export function createLine({
   const textEle = createLineText({
     content: text,
     position: { ...position },
-    spacing: nodeRadius / 2 + nodeRadius / 10,
+    spacing: nodeRadius / 10,
     color: color,
   });
   const f = document.createElementNS("http://www.w3.org/2000/svg", "g");
-  f.setAttribute("x", "100");
-  f.setAttribute("y", "100");
   f.appendChild(lineEle);
   f.appendChild(textEle);
+  f.setAttribute("z-index", "-1");
   f.onclick = onclick;
   return f;
 }

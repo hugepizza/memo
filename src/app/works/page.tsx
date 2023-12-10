@@ -1,7 +1,7 @@
 "use client";
 import _ from "lodash";
 import { useDebounce } from "use-debounce";
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import useSWR from "swr";
 import { GoogleBook } from "../tpyes/model";
 import logo from "../../../public/search-logo.svg";
@@ -38,13 +38,35 @@ export default function Page() {
       <div className="flex flex-col justify-center items-center  grow">
         <Image priority src={theme === "dark" ? darkLogo : logo} alt="Logo" />
         <input
-          className="input input-bordered focus:outline-none border-solid w-full"
+          className="input input-bordered border-solid w-full"
           value={kw}
+          placeholder="Find a book..."
           onChange={(e) => {
             setKw(e.currentTarget.value);
           }}
         ></input>
-        <p className="sm:text-3xl">Add a new book to memo list.</p>
+        <div
+          className=" flex flex-row link-primary  items-center self-end"
+          onClick={() => {
+            (
+              document.getElementById("custom_memo") as HTMLDialogElement
+            ).showModal();
+          }}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            className="w-5 h-5"
+          >
+            <path
+              fillRule="evenodd"
+              d="M5 10a.75.75 0 01.75-.75h6.638L10.23 7.29a.75.75 0 111.04-1.08l3.5 3.25a.75.75 0 010 1.08l-3.5 3.25a.75.75 0 11-1.04-1.08l2.158-1.96H5.75A.75.75 0 015 10z"
+              clipRule="evenodd"
+            />
+          </svg>
+          Or add a custom memo
+        </div>
       </div>
       <SearchPage
         kw={debouncedValue}
@@ -52,7 +74,102 @@ export default function Page() {
         addMemo={addMemo}
         setPage={setPage}
       />
+      <CustomModal />
+      {/* Open the modal using document.getElementById('ID').showModal() method */}
     </div>
+  );
+}
+function CustomModal() {
+  const addCustomMemo = async (title: string, cover?: string) => {
+    const resp = await fetch("/api/memo/custom", {
+      method: "POST",
+      body: JSON.stringify({ title, cover }),
+      headers: { "Content-Type": "application/json " },
+    });
+    if (!resp.ok) {
+      throw resp.status;
+    }
+    const data = await resp.json();
+    if (data.error) {
+      throw data.error.msg;
+    }
+    return data.data.memoId;
+  };
+  const router = useRouter();
+  const [title, setTitle] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files) {
+      return;
+    }
+    const file = event.target.files[0];
+    if (file && !isValidFileType(file)) {
+      toast.error("Only JPEG and PNG formats are supported.");
+    }
+    if (file && file.size > 4 * 1024 * 1024) {
+      toast.error("Maximum file size for uploads is 4MB.");
+    }
+    setFile(file);
+  };
+
+  const isValidFileType = (file: File) => {
+    const allowedFileTypes = ["image/jpeg", "image/png"];
+    return allowedFileTypes.includes(file.type);
+  };
+
+  return (
+    <dialog id="custom_memo" className="modal">
+      <div className="modal-box space-y-2">
+        <h3 className="font-bold text-lg">
+          Hello! Your're creating a custom memo
+        </h3>
+        <input
+          type="text"
+          className="input bg-base-200 w-full"
+          placeholder="custom memo name ..."
+          value={title}
+          onChange={(e) => setTitle(e.currentTarget.value)}
+        ></input>
+        <label className="form-control w-full max-w-xs">
+          <div className="label">
+            <span className="label-text">
+              {"Choose a cover image (.jpg/.png, < 4MB)."}
+            </span>
+          </div>
+          <input
+            type="file"
+            className="file-input file-input-bordered w-full max-w-xs"
+            onChange={handleFileChange}
+          />
+          <div className="label"></div>
+        </label>
+        <button
+          className="btn "
+          onClick={() => {
+            toast
+              .promise(addCustomMemo(title, ""), {
+                loading: "creating memo...",
+                success: "created!",
+                error: (e) => e,
+              })
+              .then((id) => {
+                router.push(`/memo/${id}#graph`);
+              });
+          }}
+        >
+          Add
+        </button>
+        <div className="modal-action">
+          <form method="dialog">
+            <div className="space-x-2"></div>
+          </form>
+        </div>
+      </div>
+      <form method="dialog" className="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
   );
 }
 

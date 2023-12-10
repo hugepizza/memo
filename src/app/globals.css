@@ -5,3 +5,11 @@
 /* input:focus {
   outline: none;
 } */
+
+.input {
+  @apply focus:outline-none;
+}
+
+.textarea {
+  @apply focus:outline-none;
+}

@@ -1,10 +1,9 @@
 import { useContext, useEffect, useState } from "react";
-import "../../globals.css";
 import { Relation } from "@/app/tpyes/model";
 import toast from "react-hot-toast";
-import { CharacterEditerContext } from "./character-context";
-import { AddButton, DeleteButton, UpdateButton } from "../button";
-import { RelationEditerContext } from "./relation-context";
+import { CharacterEditerContext } from "../providers/character-provider";
+import { AddButton, DeleteButton, UpdateButton } from "../../button";
+import { RelationEditerContext } from "../providers/relation-provider";
 export function CharacterForm({
   id,
   setIsVisible,
@@ -101,7 +100,7 @@ function RelationList({ characterId }: { characterId: string }) {
   const { memo } = useContext(RelationEditerContext);
   const id = parseInt(characterId, 10);
   const relations = memo.characterRelations.filter(
-    (e) => e.sourceCharacterId === id || e.targetCharacterId === id
+    (e) => e.sourceCharacterId === id
   );
   const r = relations.map((e) => (
     <ReationUpdate
@@ -172,7 +171,7 @@ function ReationUpdate({
           <span className="badge badge-lg badge-neutral">{character.name}</span>
           <input
             type="text"
-            className="input input-sm focus:outline-none"
+            className="input input-sm"
             placeholder="enter relationship"
             value={newRelationName}
             onChange={(e) => setNewRelationName(e.currentTarget.value)}

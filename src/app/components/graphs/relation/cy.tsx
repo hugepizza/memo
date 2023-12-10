@@ -7,7 +7,7 @@ import { MutableRefObject, useEffect, useRef, useState } from "react";
 import rough from "roughjs";
 
 import { CharacterModal } from "../../editors/character-modal";
-import CharacterEditerContextProvider from "../../editors/character-context";
+import CharacterEditerContextProvider from "../../editors/providers/character-provider";
 import { createNode, createLine, createTitle } from "../rough";
 
 export type Node = {

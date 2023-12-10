@@ -25,11 +25,13 @@ export function useD3Network({
   height,
   metaNodes,
   metaEdges,
+  forceRadius,
 }: {
   width: number;
   height: number;
   metaNodes: MetaNode[];
   metaEdges: MetaEdge[];
+  forceRadius?: number;
 }) {
   const [ndata, setNdata] = useState<NodeData[]>([]);
   const [ldata, setLdata] = useState<LinkData[]>([]);
@@ -120,13 +122,13 @@ export function useD3Network({
         forceLink(links).id((d: any) => d.id)
       )
       .force("charge", forceManyBody())
-      .force("collide", forceCollide().radius(70)) // 调整 radius 的值
+      .force("collide", forceCollide().radius(forceRadius ?? 70)) // 调整 radius 的值
       .force("x", forceX().strength(0.1).x(width))
       .force("y", forceY().strength(0.1).y(height))
       .force("center", forceCenter(width / 2, height / 2))
       .on("tick", ticked)
       .on("end", () => {});
     simulation.alphaMin(0.1);
-  }, [width, height, metaEdges, metaNodes]);
+  }, [width, height, metaEdges, metaNodes, forceRadius]);
   return { d3NodeData: ndata, d3EdgeData: ldata };
 }

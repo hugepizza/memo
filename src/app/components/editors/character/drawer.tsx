@@ -1,16 +1,14 @@
-import { CharacterForm } from "./character-form";
-import { RelationForm } from "./relation-form";
+import { CharacterForm } from "./form";
+import { RelationModal } from "../relation/modal";
 
 export function Drawer({
   characterId,
   isVisible,
   setIsVisible,
-  mode,
 }: {
   characterId: string | null;
   isVisible: boolean;
   setIsVisible: (v: boolean) => void;
-  mode: "character" | "relation";
 }) {
   return (
     <div className="drawer z-20">
@@ -30,12 +28,7 @@ export function Drawer({
           onClick={() => setIsVisible(false)}
         ></label>
         <ul className="menu p-4 w-4/5 sm:w-3/5 min-h-full bg-base-100 text-base-content">
-          {mode === "character" && (
-            <CharacterForm setIsVisible={setIsVisible} id={characterId} />
-          )}
-          {mode === "relation" && (
-            <RelationForm setIsVisible={setIsVisible} id={characterId} />
-          )}
+          <CharacterForm setIsVisible={setIsVisible} id={characterId} />
         </ul>
       </div>
     </div>
