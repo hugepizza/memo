@@ -1,19 +1,19 @@
 - [x] load more
   - [x] memo
   - [x] google book
-- [ ] svg export
-- [ ] auth
-  - [ ] nextAuth
-  - [ ] userId check
-  - [ ] view other memo
+- [x] svg export
+- [x] auth
+  - [x] nextAuth
+  - [x] userId check
+  - [x] view other memo
 
-- [ ] seo
-  - [ ] other memo page meta
+- [x] seo
+  - [x] other memo page meta
 
-- [ ] reponsive ui   
+- [x] reponsive ui   
 - [ ] search bar result
-- [ ] better graph 
-- [ ] better editor
+- [x] better graph 
+- [x] better editor
 - [ ] better works search
 - [ ] brand
-- [ ] domain
+- [x] domain
