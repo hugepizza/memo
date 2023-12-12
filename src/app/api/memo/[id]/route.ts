@@ -21,7 +21,7 @@ async function GET(
       works: true,
     },
   });
-  if (memo?.visibility === "PRIVATE" && userId != memo.id) {
+  if (memo?.visibility === "PRIVATE" && userId != memo.userId) {
     return NextResponse.json({ data: { memo: null } });
   }
   return NextResponse.json({ data: { memo } });

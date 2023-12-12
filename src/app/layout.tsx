@@ -4,6 +4,7 @@ import ThemeWrapper from "./providers/theme-wrapper";
 import Navbar from "./components/navbar";
 import NextThemeProvider from "./providers/next-theme";
 import SessionProvider from "./providers/session";
+import { Analytics } from "@vercel/analytics/react";
 
 export const metadata: Metadata = {
   title:
@@ -32,6 +33,7 @@ export default function RootLayout({
             <ThemeWrapper>
               <Navbar />
               {children}
+              <Analytics />
             </ThemeWrapper>
           </NextThemeProvider>
         </SessionProvider>

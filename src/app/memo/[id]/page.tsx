@@ -1,38 +1,46 @@
-"use client";
-
-import Relation from "@/app/components/graphs";
-import useSWR from "swr";
-import { notFound } from "next/navigation";
 import { Memo } from "@/app/tpyes/model";
-import CharacterEditerContextProvider from "@/app/components/providers/character-provider";
-import RelationEditerContextProvider from "@/app/components/providers/relation-provider";
+import { Metadata, ResolvingMetadata } from "next";
+import Content from "../client-side";
+import prisma from "@/app/prisma/prisma";
+
+type Props = {
+  params: { id: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+};
+
+export async function generateMetadata(
+  { params, searchParams }: Props,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const memo = await prisma.memo.findFirst({
+    where: { id: params.id, visibility: "PUBLIC", deletedAt: { equals: null } },
+    include: {
+      characters: true,
+      works: true,
+    },
+  });
+  const p = await parent;
+  if (!memo) {
+    return {
+      title: p.title,
+      description: p.description,
+    };
+  }
+  return {
+    title: `${memo?.worksTitle} | Hand-Drawn Novel Character Relationship Charts Online`,
+    description: `${
+      memo?.worksTitle
+    } Character Relationship Network Charts ${memo?.characters
+      ?.slice(0, 5)
+      .map((e) => e.name)
+      .join(", ")}`,
+    applicationName: "Memo",
+    openGraph: {
+      images: [{ url: memo?.works.thumbnail! }],
+    },
+  };
+}
 
 export default function Page({ params }: { params: { id: string } }) {
-  const { data: memo, isLoading } = useSWR(
-    "/api/memo/" + params.id,
-    (url: string) =>
-      fetch(url, { method: "GET" })
-        .then((resp) => resp.json())
-        .then((resp) => resp.data.memo as Memo)
-        .catch((err) => {
-          console.log(err);
-        })
-  );
-
-  if (isLoading) {
-    return <></>;
-  }
-  if (!memo?.id) {
-    return notFound();
-  }
-  
-  return (
-    <div className="w-full flex flex-col" id="graph">
-      <CharacterEditerContextProvider memoId={memo.id} memo={memo}>
-        <RelationEditerContextProvider memoId={memo.id} memo={memo}>
-          <Relation />
-        </RelationEditerContextProvider>
-      </CharacterEditerContextProvider>
-    </div>
-  );
+  return <Content params={params}></Content>;
 }
