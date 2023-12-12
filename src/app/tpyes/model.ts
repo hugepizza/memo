@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 
-export type SearchMode = "works" | "character";
+export type SearchMode = "books" | "character";
 
 export type GoogleBook = {
   id: string;

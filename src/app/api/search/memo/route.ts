@@ -9,12 +9,15 @@ async function GET(request: NextRequest) {
     return NextResponse.json({ data: { works: [] } });
   }
   let results: MemoSearchResult[] = [];
-  const mode = (searchParams.get("mode") as SearchMode) ?? "works";
+  const mode = (searchParams.get("mode") as SearchMode) ?? "books";
   const keywords: string = kw.replace(/ +/g, " ").replaceAll(" ", "+");
   try {
-    if (mode === "works") {
+    if (mode === "books") {
       const items = await prisma.memo.findMany({
-        where: { worksTitle: { contains: keywords }, visibility: "PUBLIC" },
+        where: {
+          worksTitle: { contains: keywords, mode: "insensitive" },
+          visibility: "PUBLIC",
+        },
         include: { characters: true, characterRelations: true, events: true },
         take: 5,
       });
@@ -49,7 +52,6 @@ async function GET(request: NextRequest) {
         relationCount: ele.memo.characterRelations.length,
       }));
     }
-    
 
     return NextResponse.json({ data: { memo: results } });
   } catch (error) {

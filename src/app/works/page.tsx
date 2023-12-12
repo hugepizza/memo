@@ -4,8 +4,7 @@ import { useDebounce } from "use-debounce";
 import { ChangeEvent, useEffect, useState } from "react";
 import useSWR from "swr";
 import { GoogleBook } from "../tpyes/model";
-import logo from "../../../public/search-logo.svg";
-import darkLogo from "../../../public/search-logo-dark.svg";
+import logo from "../../../public/logo.svg";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
@@ -37,7 +36,7 @@ export default function Page() {
   return (
     <div className="flex flex-col w-full h-auto px-2 sm:px-32">
       <div className="flex flex-col justify-center items-center  grow">
-        <Image priority src={theme === "dark" ? darkLogo : logo} alt="Logo" />
+        <Image priority src={logo} alt="Logo" />
         <input
           className="input input-bordered border-solid w-full"
           value={kw}

@@ -25,7 +25,7 @@ export function SearchResultItem({
     <li className="flex flex-col text-left">
       <Link href={`/memo/${result.memoId}#graph`}>
         <div className="block">{result.kwTitle}</div>
-        {mode === "works" && (
+        {mode === "books" && (
           <div className="text-right">{result.charactersCount} characters</div>
         )}
         {mode === "character" && (

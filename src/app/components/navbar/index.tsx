@@ -1,18 +1,22 @@
 "use client";
-
+import logo from "../../../../public/nav-logo.svg";
 import Link from "next/link";
 import Search from "./search";
 import ThemeSwitch from "./theme-switch";
 import User, { UnAuthUser } from "./user";
 import { useSession } from "next-auth/react";
 import LoginModal from "./login-modal";
+import Image from "next/image";
+import { useTheme } from "next-themes";
+
 export default function Navbar() {
   const session = useSession();
+  const { theme } = useTheme();
   return (
     <section className="navbar bg-base-100  px-2 sm:px-32">
       <div className="navbar-start">
-        <Link href={"/memo"} className="btn btn-ghost text-xl">
-          Memo
+        <Link href={"/memo"} className="">
+          <Image priority src={logo} alt="Logo" />
         </Link>
       </div>
       <div className="navbar-center hidden sm:block sm:w-[30vw]">

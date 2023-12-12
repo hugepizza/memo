@@ -12,12 +12,12 @@ import {
 } from "./result";
 
 export default function Search() {
-  const [mode, setMode] = useState<SearchMode>("works");
+  const [mode, setMode] = useState<SearchMode>("books");
 
   return (
     <div className="form-control relative grow">
       <ModeSwitchGroup
-        on="works"
+        on="books"
         off="character"
         mode={mode}
         setMode={(mode: SearchMode) => setMode(mode)}
@@ -31,8 +31,7 @@ function SearchInput({ mode }: { mode: SearchMode }) {
   const [debouncedWkValue] = useDebounce(kw, 100);
   const [suggestion, setSuggestion] = useState(false);
   const getKey = () => {
-    console.log(`/api/search/memo?kw=${debouncedWkValue}&mode=${mode}`);
-    return `/api/search/memo?kw=${debouncedWkValue}&mode=${mode}`;
+    return `/api/search/memo?kw=${debouncedWkValue.toLowerCase()}&mode=${mode}`;
   };
   const { data: results, isLoading } = useSWR(getKey(), (url: string) => {
     if (!debouncedWkValue) {
@@ -75,6 +74,9 @@ function SearchInput({ mode }: { mode: SearchMode }) {
           }, 200);
         }}
         onChange={(e) => {
+          if (e.currentTarget.value.trim() != "") {
+            setSuggestion(true);
+          }
           setKw(e.currentTarget.value);
           if (e.currentTarget.value === "") {
             setSuggestion(false);
