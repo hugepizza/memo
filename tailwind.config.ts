@@ -3,7 +3,7 @@ import type { Config } from "tailwindcss";
 const config: Config = {
   // darkMode: "class",
   daisyui: {
-    themes: ["light", "dark"],
+    themes: ["retro", "dark"],
   },
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
