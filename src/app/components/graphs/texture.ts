@@ -53,3 +53,36 @@ function createTexture({}: {}) {
   //   containerRef.current?.append(defs);
   //   containerRef.current?.append(bg);
 }
+
+export function createImgBackground({ url }: { url: string }) {
+  const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+
+  const pattern = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "pattern"
+  );
+  pattern.setAttribute("id", "background");
+  pattern.setAttribute("patternUnits", "userSpaceOnUse");
+  pattern.setAttribute("height", "100%");
+  pattern.setAttribute("width", "100%");
+
+  const image = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "pattern"
+  );
+  image.setAttribute("href", url);
+  image.setAttribute("height", "100%");
+  image.setAttribute("width", "100%");
+
+  pattern.append(image);
+  defs.append(pattern);
+  return defs;
+}
+
+export function createBackgroundRect() {
+  const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+  rect.setAttribute("height", "100%");
+  rect.setAttribute("width", "100%");
+  rect.setAttribute("fill", "url(#background)");
+  return rect;
+}

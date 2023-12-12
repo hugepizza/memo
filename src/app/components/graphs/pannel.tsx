@@ -1,47 +1,85 @@
 import { Canvg } from "canvg";
-import { MutableRefObject } from "react";
 
 export function Pannal({
-  downloadElementRef,
+  elememtId,
   setEditorIsVisible,
   setEditingCharacterId,
   forceRadius,
   setForceRadius,
 }: {
-  downloadElementRef: MutableRefObject<SVGSVGElement | null>;
+  elememtId: string;
   setEditorIsVisible: (v: boolean) => void;
   setEditingCharacterId: (id: string | null) => void;
   forceRadius: number;
   setForceRadius: (r: number) => void;
 }) {
   const download = async () => {
-    console.log("downloadElement", downloadElementRef.current);
-    if (downloadElementRef.current) {
-      const desiredWidth = 2400;
-      const scaleFactor =
-        desiredWidth / downloadElementRef.current.width.baseVal.value;
+    const ele = document.getElementById(elememtId);
+    if (ele instanceof SVGSVGElement) {
+      const downloadElement = ele as SVGSVGElement;
+      const cloned = downloadElement.cloneNode(true) as SVGSVGElement;
+      const images = cloned.getElementsByTagNameNS(
+        "http://www.w3.org/2000/svg",
+        "image"
+      );
 
-      const canvas = document.createElement("canvas");
-      canvas.width =
-        downloadElementRef.current.width.baseVal.value * scaleFactor;
-      canvas.height =
-        downloadElementRef.current.height.baseVal.value * scaleFactor;
-      const context = canvas.getContext("2d");
-      if (context) {
-        context.scale(scaleFactor, scaleFactor);
-        const v = await Canvg.from(
-          context,
-          new XMLSerializer().serializeToString(downloadElementRef.current)
-        );
-        v.start();
-        const dataUrl = canvas.toDataURL("image/png");
-        const downloadLink = document.createElement("a");
-        downloadLink.href = dataUrl;
-        downloadLink.download = "downloaded.png";
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
-      }
+      const bgHandle = () =>
+        new Promise(async (resolve) => {
+          if (images.length > 0) {
+            const href = images[0].getAttribute("href");
+            if (href) {
+              console.log("href", href);
+              const bgBlob = await (await fetch(href)).blob();
+              const reader = new FileReader();
+
+              reader.onloadend = function () {
+                if (typeof reader.result === "string") {
+                  const base64String = reader.result.split(",")[1];
+                  images[0].setAttribute(
+                    "href",
+                    "data:image/jpeg;base64," + base64String
+                  );
+                }
+                resolve(1);
+              };
+              reader.readAsDataURL(bgBlob);
+            } else {
+              resolve(1);
+            }
+          } else {
+            resolve(1);
+          }
+        });
+
+      await bgHandle();
+
+      // if (context) {
+      //   context.scale(scaleFactor, scaleFactor);
+      //   const v = await Canvg.from(
+      //     context,
+      //     new XMLSerializer().serializeToString(cloned)
+      //   );
+      //   v.start();
+      //   const dataUrl = canvas.toDataURL("image/png");
+      //   const downloadLink = document.createElement("a");
+      //   downloadLink.href = dataUrl;
+      //   downloadLink.download = "downloaded.png";
+      //   document.body.appendChild(downloadLink);
+      //   downloadLink.click();
+      //   document.body.removeChild(downloadLink);
+      // }
+
+      const svgString = new XMLSerializer().serializeToString(cloned);
+      const blob = new Blob([svgString], {
+        type: "image/svg+xml;charset=utf-8",
+      });
+      const dataUrl = URL.createObjectURL(blob);
+      const downloadLink = document.createElement("a");
+      downloadLink.href = dataUrl;
+      downloadLink.download = "downloaded.svg";
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
     }
   };
 

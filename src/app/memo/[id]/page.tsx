@@ -1,6 +1,6 @@
 "use client";
 
-import Relation from "@/app/components/graphs/relation";
+import Relation from "@/app/components/graphs";
 import useSWR from "swr";
 import { notFound } from "next/navigation";
 import { Memo } from "@/app/tpyes/model";

@@ -33,7 +33,6 @@ async function POST(request: NextRequest) {
     return NextResponse.json({});
   } catch (error) {
     if (error instanceof z.ZodError) {
-      console.log(1);
       return NextResponse.json({}, { status: 400 });
     } else {
       return NextResponse.error();

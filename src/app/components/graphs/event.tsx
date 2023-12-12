@@ -16,7 +16,6 @@ export default function Events({ events }: { events: Event[] }) {
   const evs = events
     .concat(first, end)
     .sort((a, b) => (a.progressPercentage ?? 0) - (b.progressPercentage ?? 0));
-  console.log("evs", evs);
 
   return (
     <div className="flex w-full justify-center items-center ">

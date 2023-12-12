@@ -1,8 +1,7 @@
 /*
 use rough.js and position to generate svg elements
  */
-import { ZCOOL_KuaiLe } from "next/font/google";
-const font = ZCOOL_KuaiLe({ weight: "400", subsets: ["latin"] });
+
 import { RoughSVG } from "roughjs/bin/svg";
 
 function createNodeText({
@@ -19,7 +18,6 @@ function createNodeText({
   const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
   text.setAttribute("x", (position.x - (spacing ?? 0)).toString());
   text.setAttribute("y", (position.y - (spacing ?? 0)).toString());
-  text.setAttribute("font-family", font.style.fontFamily);
   text.setAttribute("font-size", window.innerWidth >= 678 ? "18px" : "12px");
   if (color) {
     text.setAttribute("fill", color);
@@ -38,7 +36,6 @@ export function createTitle({
   const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
   text.setAttribute("x", "5");
   text.setAttribute("y", "24");
-  text.setAttribute("font-family", font.style.fontFamily);
   text.setAttribute("font-size", window.innerWidth >= 678 ? "24px" : "16px");
   if (color) {
     text.setAttribute("fill", color);
@@ -66,7 +63,6 @@ function createLineText({
   text.setAttribute("x", (midX + (spacing ?? 0)).toString());
   text.setAttribute("y", midY.toString());
   text.setAttribute("z-index", "-1");
-  text.setAttribute("font-family", font.style.fontFamily);
   text.setAttribute("font-size", window.innerWidth >= 678 ? "16px" : "10px");
   if (color) {
     text.setAttribute("fill", color);
@@ -90,7 +86,7 @@ export function createNode({
   text: string;
   onclick: (e: MouseEvent) => void;
 }) {
-  console.log("createNode", rc, position);
+  // console.log("createNode", rc, position);
 
   const nodeEle = rc.circle(position.x, position.y, radius, {
     stroke: color,
