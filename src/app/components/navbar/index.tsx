@@ -11,7 +11,6 @@ import { useTheme } from "next-themes";
 
 export default function Navbar() {
   const session = useSession();
-  const { theme } = useTheme();
   return (
     <section className="navbar bg-base-100  px-2 sm:px-32">
       <div className="navbar-start">

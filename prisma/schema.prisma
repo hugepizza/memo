@@ -124,6 +124,7 @@ model Character {
 
   memo Memo @relation(fields: [memoId], references: [id])
 
+  @@unique([memoId, name])
   @@index([userId])
   @@index([memoId])
 }
@@ -147,6 +148,7 @@ model CharacterRelation {
   targetCharacter Character @relation(fields: [targetCharacterId], references: [id], name: "targetCharacterRelations")
   memo            Memo      @relation(fields: [memoId], references: [id])
 
+  @@unique([memoId, sourceCharacterId, targetCharacterId])
   @@index([userId])
   @@index([memoId])
 }

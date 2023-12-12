@@ -10,7 +10,6 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import "./page.style.css";
 import ReactPaginate from "react-paginate";
-import { useTheme } from "next-themes";
 import { auth, mustLogin } from "../kits/fetch";
 
 export default function Page() {
@@ -32,7 +31,7 @@ export default function Page() {
     }
     return data.data.memoId;
   };
-  const { theme } = useTheme();
+
   return (
     <div className="flex flex-col w-full h-auto px-2 sm:px-32">
       <div className="flex flex-col justify-center items-center  grow">
@@ -147,8 +146,27 @@ function CustomModal() {
         <button
           className="btn "
           onClick={() => {
+            const run = async () => {
+              let url = "";
+              if (file) {
+                const formData = new FormData();
+                formData.append("file", file);
+                try {
+                  const resp = await fetch("/api/kit/upload", {
+                    method: "POST",
+                    body: formData,
+                  });
+                  const res = await resp.json();
+                  url = res.data.url;
+                } catch (error) {
+                  throw error;
+                }
+              }
+              const id = await addCustomMemo(title, url);
+              return id;
+            };
             toast
-              .promise(addCustomMemo(title, ""), {
+              .promise(run(), {
                 loading: "creating memo...",
                 success: "created!",
                 error: (e) => e,

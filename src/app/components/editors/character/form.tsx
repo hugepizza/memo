@@ -167,7 +167,7 @@ function ReationUpdate({
   return (
     <div className="flex items-center space-x-4">
       <div className="flex flex-wrap space-x-4 justify-between grow">
-        <div className="flex flex-row space-x-4 ">
+        <div className="flex flex-wrap space-x-4 ">
           <span className="badge badge-lg badge-neutral">{character.name}</span>
           <input
             type="text"

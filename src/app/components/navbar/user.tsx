@@ -1,5 +1,4 @@
-import { signIn, signOut, useSession } from "next-auth/react";
-import ThemeSwitch from "./theme-switch";
+import { signOut } from "next-auth/react";
 import { DefaultUser } from "next-auth";
 
 export default function User({ user }: { user: DefaultUser }) {

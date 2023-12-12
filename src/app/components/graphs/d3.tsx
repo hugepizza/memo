@@ -10,6 +10,7 @@ import {
   forceY,
   select,
 } from "d3";
+import { useDebounce } from "use-debounce";
 
 type D3Node = any;
 type D3Link = any;
@@ -36,6 +37,8 @@ export function useD3Network({
   const [ndata, setNdata] = useState<NodeData[]>([]);
   const [ldata, setLdata] = useState<LinkData[]>([]);
 
+  const [dn] = useDebounce(ndata, 12);
+  const [dl] = useDebounce(ldata, 12);
   useEffect(() => {
     const nodes: D3Node[] = metaNodes.map((e, i) => ({
       index: i,
@@ -126,9 +129,10 @@ export function useD3Network({
       .force("x", forceX().strength(0.1).x(width))
       .force("y", forceY().strength(0.1).y(height))
       .force("center", forceCenter(width / 2, height / 2))
+      // .alphaDecay(0.1)
       .on("tick", ticked)
       .on("end", () => {});
     simulation.alphaMin(0.1);
   }, [width, height, metaEdges, metaNodes, forceRadius]);
-  return { d3NodeData: ndata, d3EdgeData: ldata };
+  return { d3NodeData: dn, d3EdgeData: dl };
 }

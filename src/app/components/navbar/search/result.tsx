@@ -29,7 +29,7 @@ export function SearchResultItem({
           <div className="text-right">{result.charactersCount} characters</div>
         )}
         {mode === "character" && (
-          <div className="text-right">from works {result.worksTitle}</div>
+          <div className="text-right">from {result.worksTitle}</div>
         )}
       </Link>
     </li>

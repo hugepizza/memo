@@ -14,7 +14,7 @@ export default function Page() {
   return (
     <div className="flex flex-col justify-center w-full space-y-2 px-2 sm:px-32">
       <div className="block sm:hidden">
-        <Search></Search>
+        <Search/>
       </div>
       <AddButton />
       <div className="flex flex-col justify-center w-full">

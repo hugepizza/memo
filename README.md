@@ -15,5 +15,6 @@
 - [x] better graph 
 - [x] better editor
 - [ ] better works search
-- [ ] brand
+- [x] brand
 - [x] domain
+- [ ] home page

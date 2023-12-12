@@ -6,6 +6,10 @@ const nextConfig = {
         protocol: "http",
         hostname: "books.google.com",
       },
+      {
+        protocol: "https",
+        hostname: "img.reading-memo.xyz",
+      },
     ],
   },
 };
