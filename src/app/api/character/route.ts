@@ -1,14 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/prisma/prisma";
 import { z } from "zod";
-async function GET(request: NextRequest) {
-  const memoId = "klmzf";
-  const userId = "wll";
-  const characters = await prisma.character.findMany({
-    where: { memoId, userId, deletedAt: { equals: null } },
-  });
-  return NextResponse.json({ data: { characters } });
-}
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/auth";
+// async function GET(request: NextRequest) {
+//   const session = await getServerSession(authOptions);
+//   if (!session?.user) {
+//     return NextResponse.json({}, { status: 401 });
+//   }
+//   const userId = session.user.id;
+//   const memoId = "klmzf";
+//   const userId = "wll";
+//   const characters = await prisma.character.findMany({
+//     where: { memoId, userId, deletedAt: { equals: null } },
+//   });
+//   return NextResponse.json({ data: { characters } });
+// }
 
 const input = z.object({
   name: z.string(),
@@ -17,8 +24,11 @@ const input = z.object({
 });
 
 async function POST(request: NextRequest) {
-  console.log("create");
-  const userId = "wll";
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    return NextResponse.json({}, { status: 401 });
+  }
+  const userId = session.user.id;
   const data = await request.json();
   try {
     const params = input.parse(data);
@@ -40,4 +50,4 @@ async function POST(request: NextRequest) {
   }
 }
 
-export { GET, POST };
+export { POST };

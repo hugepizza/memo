@@ -7,18 +7,20 @@ import { RoughSVG } from "roughjs/bin/svg";
 function createNodeText({
   position,
   content,
+  fontSize,
   spacing,
   color,
 }: {
   position: { x: number; y: number };
   content: string;
+  fontSize: number;
   spacing?: number;
   color?: string;
 }) {
   const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
   text.setAttribute("x", (position.x - (spacing ?? 0)).toString());
   text.setAttribute("y", (position.y - (spacing ?? 0)).toString());
-  text.setAttribute("font-size", window.innerWidth >= 678 ? "18px" : "12px");
+  text.setAttribute("font-size", fontSize.toString());
   if (color) {
     text.setAttribute("fill", color);
   }
@@ -29,14 +31,16 @@ function createNodeText({
 export function createTitle({
   content,
   color,
+  fontSize,
 }: {
   content: string;
+  fontSize: number;
   color?: string;
 }) {
   const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-  text.setAttribute("x", "5");
-  text.setAttribute("y", "24");
-  text.setAttribute("font-size", window.innerWidth >= 678 ? "24px" : "16px");
+  text.setAttribute("x", (fontSize / 2).toString());
+  text.setAttribute("y", fontSize.toString());
+  text.setAttribute("font-size", fontSize.toString());
   if (color) {
     text.setAttribute("fill", color);
   }
@@ -49,21 +53,22 @@ function createLineText({
   content,
   spacing,
   color,
+  fontSize,
 }: {
   position: { x1: number; y1: number; x2: number; y2: number };
   content: string;
   spacing?: number;
   color?: string;
+  fontSize: number;
 }) {
   const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-
   const midX = (position.x1 + position.x2) / 2;
   const midY = (position.y1 + position.y2) / 2;
 
   text.setAttribute("x", (midX + (spacing ?? 0)).toString());
   text.setAttribute("y", midY.toString());
   text.setAttribute("z-index", "-1");
-  text.setAttribute("font-size", window.innerWidth >= 678 ? "16px" : "10px");
+  text.setAttribute("font-size", fontSize.toString());
   if (color) {
     text.setAttribute("fill", color);
   }
@@ -77,17 +82,21 @@ export function createNode({
   radius,
   color,
   text,
+  fontSize,
   onclick,
+  onmouseover,
+  onmouseout,
 }: {
   rc: RoughSVG;
   position: { x: number; y: number };
   radius: number;
   color: string;
   text: string;
+  fontSize: number;
   onclick: (e: MouseEvent) => void;
+  onmouseover: (e: MouseEvent) => void;
+  onmouseout: (e: MouseEvent) => void;
 }) {
-  // console.log("createNode", rc, position);
-
   const nodeEle = rc.circle(position.x, position.y, radius, {
     stroke: color,
     fill: color,
@@ -97,7 +106,10 @@ export function createNode({
     position: { x: position.x, y: position.y },
     spacing: radius / 2 + radius / 10,
     color: color,
+    fontSize,
   });
+  textEle.onmouseover = onmouseover;
+  textEle.onmouseout = onmouseout;
   const f = document.createElementNS("http://www.w3.org/2000/svg", "g");
   f.setAttribute("x", position.x.toString());
   f.setAttribute("y", position.y.toString());
@@ -105,10 +117,6 @@ export function createNode({
   f.appendChild(nodeEle);
   f.appendChild(textEle);
 
-  // const tooltip = document.createElement("div");
-  // tooltip.setAttribute("className", "tooltip");
-  // tooltip.setAttribute("data-tip", "12123");
-  // tooltip.append(f);
   return f;
 }
 
@@ -118,6 +126,7 @@ export function createLine({
   color,
   text,
   nodeRadius,
+  fontSize,
   onclick,
 }: {
   rc: RoughSVG;
@@ -125,6 +134,7 @@ export function createLine({
   color: string;
   text: string;
   nodeRadius: number;
+  fontSize: number;
   onclick: (e: MouseEvent) => void;
 }) {
   const lineEle = rc.line(position.x1, position.y1, position.x2, position.y2, {
@@ -137,6 +147,7 @@ export function createLine({
     position: { ...position },
     spacing: nodeRadius / 10,
     color: color,
+    fontSize,
   });
   const f = document.createElementNS("http://www.w3.org/2000/svg", "g");
   f.appendChild(lineEle);

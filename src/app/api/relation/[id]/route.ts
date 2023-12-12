@@ -1,15 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/prisma/prisma";
 import { z } from "zod";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../auth/[...nextauth]/auth";
 
 async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    return NextResponse.json({}, { status: 401 });
+  }
+  const userId = session.user.id;
   try {
     const id = parseInt(params.id, 10);
     await prisma.characterRelation.delete({
-      where: { id },
+      where: { id, userId },
     });
   } catch (error) {
     return NextResponse.error();
@@ -27,12 +34,17 @@ async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    return NextResponse.json({}, { status: 401 });
+  }
+  const userId = session.user.id;
   const id = parseInt(params.id, 10);
   const data = await request.json();
   try {
     const params = updateInput.parse(data);
     await prisma.characterRelation.update({
-      where: { id },
+      where: { id, userId },
       data: {
         sourceCharacterId: params.sourceId,
         targetCharacterId: params.targetId,

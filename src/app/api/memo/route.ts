@@ -3,9 +3,15 @@ import prisma from "@/app/prisma/prisma";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { GoogleBook } from "@/app/tpyes/model";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/auth";
 
 async function GET(request: NextRequest) {
-  const userId = "wll";
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    return NextResponse.json({}, { status: 401 });
+  }
+  const userId = session.user.id;
   const searchParams = request.nextUrl.searchParams;
   const page = parseInt(searchParams.get("page") || "0", 10) || 0;
   const pageSize = parseInt(searchParams.get("pageSize") || "8", 10) || 8;
@@ -30,7 +36,11 @@ const input = z.object({
 });
 // add with google book id
 async function POST(request: NextRequest) {
-  const userId = "wll";
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    return NextResponse.json({}, { status: 401 });
+  }
+  const userId = session.user.id;
   const data = await request.json();
 
   let googleBookId = "";

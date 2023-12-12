@@ -1,9 +1,9 @@
 import { useContext, useEffect, useState } from "react";
 import { Relation } from "@/app/tpyes/model";
 import toast from "react-hot-toast";
-import { CharacterEditerContext } from "../providers/character-provider";
+import { CharacterEditerContext } from "../../providers/character-provider";
 import { AddButton, DeleteButton, UpdateButton } from "../../button";
-import { RelationEditerContext } from "../providers/relation-provider";
+import { RelationEditerContext } from "../../providers/relation-provider";
 export function CharacterForm({
   id,
   setIsVisible,

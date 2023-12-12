@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/prisma/prisma";
 import { z } from "zod";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/auth";
 
 const addInput = z.object({
   memoId: z.string(),
@@ -10,7 +12,12 @@ const addInput = z.object({
 });
 
 async function POST(request: NextRequest) {
-  const userId = "wll";
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    return NextResponse.json({}, { status: 401 });
+  }
+  const userId = session.user.id;
+  
   const data = await request.json();
   try {
     const params = addInput.parse(data);

@@ -51,7 +51,6 @@ function SearchInput({ mode }: { mode: SearchMode }) {
 
   let resultItems: React.ReactNode = <SearchResultEmpty />;
   if (isLoading) {
-    console.log("loading");
     resultItems = <SearchResultLoading />;
   } else if (results && results.length > 0) {
     resultItems = results.map((ele) => (
@@ -61,7 +60,7 @@ function SearchInput({ mode }: { mode: SearchMode }) {
   const g = <SearchResultGroup>{resultItems}</SearchResultGroup>;
   let blurTimeoutId: NodeJS.Timeout;
   return (
-    <div className="dropdown">
+    <div className="dropdown w-full">
       <input
         placeholder={"Search Memo By"}
         type="text"
@@ -80,6 +79,8 @@ function SearchInput({ mode }: { mode: SearchMode }) {
           if (e.currentTarget.value === "") {
             setSuggestion(false);
             return;
+          } else {
+            console.log(e.currentTarget.value);
           }
         }}
       ></input>

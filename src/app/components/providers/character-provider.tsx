@@ -1,3 +1,4 @@
+import { mustLogin } from "@/app/kits/fetch";
 import { Character, Memo, Relation } from "@/app/tpyes/model";
 import { createContext, ReactNode, useState } from "react";
 import { useSWRConfig } from "swr";
@@ -34,7 +35,7 @@ export default function CharacterEditerContextProvider({
       const resp = await fetch("/api/character", {
         method: "POST",
         body: JSON.stringify({ name, memoId, remark }),
-      });
+      }).then(mustLogin);
       if (!resp.ok) {
         throw resp.status;
       }
@@ -56,7 +57,7 @@ export default function CharacterEditerContextProvider({
       const resp = await fetch("/api/character/" + characterId.toString(), {
         method: "PUT",
         body: JSON.stringify({ name, characterId, remark }),
-      });
+      }).then(mustLogin);
       if (!resp.ok) {
         throw resp.status;
       }
@@ -74,7 +75,7 @@ export default function CharacterEditerContextProvider({
     try {
       const resp = await fetch("/api/character/" + characterId.toString(), {
         method: "DELETE",
-      });
+      }).then(mustLogin);
       if (!resp.ok) {
         throw resp.status;
       }

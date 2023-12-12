@@ -10,18 +10,14 @@ async function GET(request: NextRequest) {
   }
   let results: MemoSearchResult[] = [];
   const mode = (searchParams.get("mode") as SearchMode) ?? "works";
-
-  console.log("mode", mode);
-
   const keywords: string = kw.replace(/ +/g, " ").replaceAll(" ", "+");
   try {
     if (mode === "works") {
       const items = await prisma.memo.findMany({
-        where: { worksTitle: { contains: keywords } },
+        where: { worksTitle: { contains: keywords }, visibility: "PUBLIC" },
         include: { characters: true, characterRelations: true, events: true },
         take: 5,
       });
-
       results = items.map((ele) => ({
         memoId: ele.id,
         kwTitle: ele.worksTitle,
@@ -53,6 +49,8 @@ async function GET(request: NextRequest) {
         relationCount: ele.memo.characterRelations.length,
       }));
     }
+    
+
     return NextResponse.json({ data: { memo: results } });
   } catch (error) {
     return NextResponse.error();

@@ -23,7 +23,7 @@ export function SearchResultItem({
 }) {
   return (
     <li className="flex flex-col text-left">
-      <Link href={"/memo/" + result.memoId}>
+      <Link href={`/memo/${result.memoId}#graph`}>
         <div className="block">{result.kwTitle}</div>
         {mode === "works" && (
           <div className="text-right">{result.charactersCount} characters</div>

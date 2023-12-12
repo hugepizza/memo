@@ -45,6 +45,8 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+  memo          Memo[]
+  works         Works[]
 }
 
 model VerificationToken {
@@ -73,7 +75,15 @@ model Works {
 
   memo Memo[]
 
+  createdByUserId String?
+  createdByUser   User?   @relation(fields: [createdByUserId], references: [id])
+
   @@index([googleId])
+}
+
+enum MemoVisibility {
+  PRIVATE
+  PUBLIC
 }
 
 model Memo {
@@ -91,6 +101,8 @@ model Memo {
   works              Works               @relation(fields: [worksId], references: [id])
   worksId            String
   worksTitle         String
+  user               User                @relation(fields: [userId], references: [id])
+  visibility         MemoVisibility      @default(PUBLIC)
 
   @@index([userId])
 }

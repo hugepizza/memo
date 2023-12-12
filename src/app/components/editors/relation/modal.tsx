@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { Relation } from "@/app/tpyes/model";
 import toast from "react-hot-toast";
 import { AddButton, DeleteButton, UpdateButton } from "../../button";
-import { RelationEditerContext } from "../providers/relation-provider";
+import { RelationEditerContext } from "../../providers/relation-provider";
 export function RelationModal({
   relationId,
   isVisible,

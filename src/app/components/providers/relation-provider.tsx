@@ -1,3 +1,4 @@
+import { mustLogin } from "@/app/kits/fetch";
 import { Memo } from "@/app/tpyes/model";
 import { createContext, ReactNode, useState } from "react";
 import { useSWRConfig } from "swr";
@@ -46,7 +47,7 @@ export default function RelationEditerContextProvider({
       const resp = await fetch("/api/relation", {
         method: "POST",
         body: JSON.stringify({ name, memoId, sourceId, targetId }),
-      });
+      }).then(mustLogin);
       if (!resp.ok) {
         throw resp.status;
       }
@@ -70,7 +71,7 @@ export default function RelationEditerContextProvider({
       const resp = await fetch("/api/relation/" + relationId.toString(), {
         method: "PUT",
         body: JSON.stringify({ name, relationId, sourceId, targetId }),
-      });
+      }).then(mustLogin);
       if (!resp.ok) {
         throw resp.status;
       }
@@ -88,7 +89,7 @@ export default function RelationEditerContextProvider({
     try {
       const resp = await fetch("/api/relation/" + relationId.toString(), {
         method: "DELETE",
-      });
+      }).then(mustLogin);
       if (!resp.ok) {
         throw resp.status;
       }

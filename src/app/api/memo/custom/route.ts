@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/prisma/prisma";
 import { z } from "zod";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../auth/[...nextauth]/auth";
 
 const input = z.object({
   title: z.string(),
@@ -8,7 +10,11 @@ const input = z.object({
 });
 // add with google book id
 async function POST(request: NextRequest) {
-  const userId = "wll";
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    return NextResponse.json({}, { status: 401 });
+  }
+  const userId = session.user.id;
   const data = await request.json();
   let params: {
     title: string;

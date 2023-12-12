@@ -12,6 +12,7 @@ import toast from "react-hot-toast";
 import "./page.style.css";
 import ReactPaginate from "react-paginate";
 import { useTheme } from "next-themes";
+import { auth, authError, mustLogin } from "../kits/fetch";
 
 export default function Page() {
   const [kw, setKw] = useState("");
@@ -85,7 +86,7 @@ function CustomModal() {
       method: "POST",
       body: JSON.stringify({ title, cover }),
       headers: { "Content-Type": "application/json " },
-    });
+    }).then(mustLogin);
     if (!resp.ok) {
       throw resp.status;
     }

@@ -1,4 +1,8 @@
-export default function User() {
+import { signIn, signOut, useSession } from "next-auth/react";
+import ThemeSwitch from "./theme-switch";
+import { DefaultUser } from "next-auth";
+
+export default function User({ user }: { user: DefaultUser }) {
   return (
     <div className="dropdown dropdown-end">
       <div
@@ -7,10 +11,7 @@ export default function User() {
         className="btn btn-ghost btn-circle avatar"
       >
         <div className="w-10 rounded-full">
-          <img
-            alt="Tailwind CSS Navbar component"
-            src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"
-          />
+          <img alt={user.name ? user.name[0] : "user"} src={user.image ?? ""} />
         </div>
       </div>
       <ul
@@ -27,9 +28,31 @@ export default function User() {
           <a>Settings</a>
         </li>
         <li>
-          <a>Logout</a>
+          <a
+            onClick={(e) => {
+              e.preventDefault();
+              signOut();
+            }}
+          >
+            Logout
+          </a>
         </li>
       </ul>
+    </div>
+  );
+}
+
+export function UnAuthUser() {
+  return (
+    <div
+      className="btn"
+      onClick={() => {
+        (
+          window?.document?.getElementById("login_modal") as HTMLDialogElement
+        ).showModal();
+      }}
+    >
+      Log in
     </div>
   );
 }
