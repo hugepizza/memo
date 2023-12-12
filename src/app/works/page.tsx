@@ -12,7 +12,7 @@ import toast from "react-hot-toast";
 import "./page.style.css";
 import ReactPaginate from "react-paginate";
 import { useTheme } from "next-themes";
-import { auth, authError, mustLogin } from "../kits/fetch";
+import { auth, mustLogin } from "../kits/fetch";
 
 export default function Page() {
   const [kw, setKw] = useState("");

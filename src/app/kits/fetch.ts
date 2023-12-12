@@ -1,5 +1,3 @@
-import toast from "react-hot-toast/headless";
-
 export const auth = (resp: Response, callback: () => void) => {
   if (resp.status === 401) {
     callback();
