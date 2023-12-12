@@ -16,7 +16,7 @@ export default function Content({ params }: { params: { id: string } }) {
   );
 
   if (isLoading) {
-    return <></>;
+    return <progress className="w-full progress "></progress>;
   }
   if (!memo?.id) {
     return notFound();
