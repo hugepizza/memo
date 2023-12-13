@@ -1,20 +1,16 @@
-- [x] load more
-  - [x] memo
-  - [x] google book
-- [x] svg export
-- [x] auth
-  - [x] nextAuth
-  - [x] userId check
-  - [x] view other memo
+hand-drawn style network graph
 
-- [x] seo
-  - [x] other memo page meta
+using tech:
+  * next.js
+  * nextauth
+  * postgresql
+  * prisma
+  * daisyUI
+  * d3.js
+  * rough.js
 
-- [x] reponsive ui   
-- [ ] search bar result
-- [x] better graph 
-- [x] better editor
-- [ ] better works search
-- [x] brand
-- [x] domain
-- [ ] home page
+[online view](https://www.reading-memo.xyz) host on vercel
+
+[graph demo](https://www.reading-memo.xyz/memo/clq3b1nxo000429eq19kmzdz3#graph)
+
+
