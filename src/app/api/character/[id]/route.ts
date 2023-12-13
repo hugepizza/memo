@@ -43,6 +43,7 @@ async function DELETE(
 const updateInput = z.object({
   name: z.string(),
   remark: z.string(),
+  group: z.string().optional(),
 });
 
 async function PUT(
@@ -63,6 +64,7 @@ async function PUT(
       data: {
         remark: params.remark,
         name: params.name,
+        group: params.group,
       },
     });
     return NextResponse.json({});

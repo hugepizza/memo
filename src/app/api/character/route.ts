@@ -3,6 +3,7 @@ import prisma from "@/app/prisma/prisma";
 import { z } from "zod";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/auth";
+import { group } from "console";
 // async function GET(request: NextRequest) {
 //   const session = await getServerSession(authOptions);
 //   if (!session?.user) {
@@ -21,6 +22,7 @@ const input = z.object({
   name: z.string(),
   memoId: z.string(),
   remark: z.string().optional(),
+  group: z.string().optional(),
 });
 
 async function POST(request: NextRequest) {
@@ -38,6 +40,7 @@ async function POST(request: NextRequest) {
         memoId: params.memoId,
         userId,
         remark: params.remark,
+        group: params.group,
       },
     });
     return NextResponse.json({});

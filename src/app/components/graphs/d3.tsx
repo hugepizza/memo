@@ -37,13 +37,13 @@ export function useD3Network({
   const [ndata, setNdata] = useState<NodeData[]>([]);
   const [ldata, setLdata] = useState<LinkData[]>([]);
 
-  const [dn] = useDebounce(ndata, 12);
-  const [dl] = useDebounce(ldata, 12);
+  const [dn] = useDebounce(ndata, 16);
+  const [dl] = useDebounce(ldata, 16);
   useEffect(() => {
     const nodes: D3Node[] = metaNodes.map((e, i) => ({
       index: i,
       id: e.data.id,
-      group: 1,
+      group: e.data.color,
     }));
     const links: D3Link[] = metaEdges
       .map((e, i) => {

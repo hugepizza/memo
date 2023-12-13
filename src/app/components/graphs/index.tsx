@@ -14,7 +14,7 @@ import { useSession } from "next-auth/react";
 import { Character } from "@/app/tpyes/model";
 
 export type MetaNode = {
-  data: { id: string; label: string; remark?: string };
+  data: { id: string; label: string; remark?: string; color?: string };
 };
 
 export type MetaEdge = {

@@ -6,11 +6,17 @@ import { useSWRConfig } from "swr";
 interface CharacterEditerContextProps {
   memoId: string;
   memo: Memo;
-  addCharacter: (memoId: string, name: string, remark: string) => Promise<void>;
+  addCharacter: (
+    memoId: string,
+    name: string,
+    remark: string,
+    group: string
+  ) => Promise<void>;
   updateCharacter: (
     characterId: number,
     name: string,
-    remark: string
+    remark: string,
+    group: string
   ) => Promise<void>;
   deleteCharacter: (characterId: number) => Promise<void>;
   isRequesting: boolean;
@@ -29,12 +35,17 @@ export default function CharacterEditerContextProvider({
 }) {
   const [isRequesting, setIsRequesting] = useState(false);
   const { mutate } = useSWRConfig();
-  async function addCharacter(memoId: string, name: string, remark: string) {
+  async function addCharacter(
+    memoId: string,
+    name: string,
+    remark: string,
+    group: string
+  ) {
     setIsRequesting(true);
     try {
       const resp = await fetch("/api/character", {
         method: "POST",
-        body: JSON.stringify({ name, memoId, remark }),
+        body: JSON.stringify({ name, memoId, remark, group }),
       }).then(mustLogin);
       if (!resp.ok) {
         throw resp.status;
@@ -50,13 +61,14 @@ export default function CharacterEditerContextProvider({
   async function updateCharacter(
     characterId: number,
     name: string,
-    remark: string
+    remark: string,
+    group: string
   ) {
     setIsRequesting(true);
     try {
       const resp = await fetch("/api/character/" + characterId.toString(), {
         method: "PUT",
-        body: JSON.stringify({ name, characterId, remark }),
+        body: JSON.stringify({ name, characterId, remark, group }),
       }).then(mustLogin);
       if (!resp.ok) {
         throw resp.status;
@@ -87,7 +99,7 @@ export default function CharacterEditerContextProvider({
     }
   }
 
-  const contextValue = {
+  const contextValue: CharacterEditerContextProps = {
     memoId,
     memo,
     addCharacter,

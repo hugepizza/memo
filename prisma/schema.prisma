@@ -118,6 +118,7 @@ model Character {
 
   name   String
   remark String?
+  group  String? @default("#000000")
 
   sourceCharacterRelations CharacterRelation[] @relation(name: "sourceCharacterRelations")
   targetCharacterRelations CharacterRelation[] @relation(name: "targetCharacterRelations")
