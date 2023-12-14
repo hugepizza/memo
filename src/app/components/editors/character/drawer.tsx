@@ -1,12 +1,11 @@
 import { CharacterForm } from "./form";
-import { RelationModal } from "../relation/modal";
 
 export function Drawer({
-  characterId,
+  characterName,
   isVisible,
   setIsVisible,
 }: {
-  characterId: string | null;
+  characterName: string | null;
   isVisible: boolean;
   setIsVisible: (v: boolean) => void;
 }) {
@@ -27,8 +26,8 @@ export function Drawer({
           className="drawer-overlay"
           onClick={() => setIsVisible(false)}
         ></label>
-        <ul className="menu p-4 w-4/5 sm:w-3/5 min-h-full bg-base-100 text-base-content">
-          <CharacterForm setIsVisible={setIsVisible} id={characterId} />
+        <ul className="menu p-4 w-4/5 sm:w-2/5 min-h-full bg-base-100 text-base-content">
+          <CharacterForm setIsVisible={setIsVisible} characterName={characterName} />
         </ul>
       </div>
     </div>

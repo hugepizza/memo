@@ -1,5 +1,5 @@
 import { MemoSearchResult } from "@/app/tpyes/api";
-import { SearchMode } from "@/app/tpyes/model";
+import { Memo } from "@/app/tpyes/memo";
 import Link from "next/link";
 import { ReactNode } from "react";
 
@@ -14,23 +14,13 @@ export function SearchResultGroup({ children }: { children: ReactNode }) {
   );
 }
 
-export function SearchResultItem({
-  result,
-  mode,
-}: {
-  result: MemoSearchResult;
-  mode: SearchMode;
-}) {
+export function SearchResultItem({ result }: { result: Memo }) {
   return (
     <li className="flex flex-col text-left">
-      <Link href={`/memo/${result.memoId}#graph`}>
-        <div className="block">{result.kwTitle}</div>
-        {mode === "books" && (
-          <div className="text-right">{result.charactersCount} characters</div>
-        )}
-        {mode === "character" && (
-          <div className="text-right">from {result.worksTitle}</div>
-        )}
+      <Link href={`/memo/${result.title}#graph`}>
+        <div className="block">{result.title}</div>
+
+        <div className="text-right">{result.characters.length} characters</div>
       </Link>
     </li>
   );
