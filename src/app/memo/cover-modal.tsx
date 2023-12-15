@@ -3,7 +3,7 @@ import { ChangeEvent, useState } from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { useAtom } from "jotai";
-import { editingTitle } from "./page";
+import { editingTitle } from "./state";
 import useLocalMemo from "../localstore/memo";
 
 export default function CoverModal() {

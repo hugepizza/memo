@@ -14,9 +14,8 @@ import { atom, useAtom } from "jotai";
 import DeleteModal from "./delete-modal";
 import PullModal from "./pull-modal";
 import useLocalMemo from "../localstore/memo";
+import { editingCloud, editingTitle } from "./state";
 
-export const editingTitle = atom("");
-export const editingCloud = atom(false);
 export default function Page() {
   const [tab, setTab] = useState("Local");
   return (

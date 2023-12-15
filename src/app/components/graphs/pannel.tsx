@@ -24,14 +24,29 @@ export function Pannal({
 }) {
   return (
     <>
-      <div className="w-10/12 sm:w-auto fixed flex bottom-10 left-1/2 transform -translate-x-1/2 flex-row z-[10] space-x-2 sm:space-x-6 bg-base-200 px-6 py-4 rounded-3xl items-center">
-        <ForceRange forceRadius={forceRadius} setForceRadius={setForceRadius} />
-        <>
-          <Svg elememtId={elememtId} /> <Edit />
-          <Cloud />
-          <ShowJson />
-          <EditJson />
-        </>
+      <div className="flex  space-y-1 flex-col w-10/12 sm:w-auto fixed bottom-10 left-1/2 transform -translate-x-1/2  z-[10] bg-base-200 px-6 py-4 rounded-3xl items-center">
+        <div className="flex flex-row space-x-2 sm:space-x-6 ">
+          <ForceRange
+            forceRadius={forceRadius}
+            setForceRadius={setForceRadius}
+          />
+          <>
+            <Svg elememtId={elememtId} /> <Edit />
+            <Cloud />
+            <ShowJson />
+            <EditJson />
+          </>
+        </div>
+        <div className="flex flex-col space-y-1 text-xs text-base-content">
+          <div>
+            Hold <kbd className="kbd kbd-xs">Q</kbd> and click 2 nodes to create
+            a link.
+          </div>
+          <div>
+            Hold <kbd className="kbd kbd-xs">W</kbd> and click multiple nodes to
+            set group.
+          </div>
+        </div>
       </div>
       <JsonModal />
       <JsonModifyModal />

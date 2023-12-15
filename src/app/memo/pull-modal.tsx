@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { editingTitle } from "./page";
+import { editingTitle } from "./state";
 import { useAtom } from "jotai";
 import useLocalMemo from "../localstore/memo";
 

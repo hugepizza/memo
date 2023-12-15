@@ -1,10 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { editingCloud, editingTitle } from "./state";
 
 import toast from "react-hot-toast";
-import { editingCloud, editingTitle } from "./page";
 import { useAtom } from "jotai";
 import { useSWRConfig } from "swr";
 import useLocalMemo from "../localstore/memo";
