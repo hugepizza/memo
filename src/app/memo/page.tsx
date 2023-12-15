@@ -101,7 +101,6 @@ function MemoPage({
       setMaxPage(Math.ceil((data?.count ?? 0) / pageSize));
     }
   }, [data]);
-  console.log("page", page);
 
   const pag = (
     <ReactPaginate

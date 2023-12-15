@@ -84,7 +84,6 @@ function Svg({ elememtId }: { elememtId: string }) {
           if (images.length > 0) {
             const href = images[0].getAttribute("href");
             if (href) {
-              console.log("href", href);
               const bgBlob = await (await fetch(href)).blob();
               const reader = new FileReader();
 

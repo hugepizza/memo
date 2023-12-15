@@ -7,8 +7,6 @@ import useLocalMemo from "@/app/localstore/memo";
 export default function Local({ title }: { title: string }) {
   const { get } = useLocalMemo();
   const memo = get(title);
-  console.log("memo", memo);
-
   if (!memo) {
     return null;
   }

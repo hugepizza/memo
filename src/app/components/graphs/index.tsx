@@ -12,6 +12,7 @@ import { Character } from "@/app/tpyes/memo";
 import { StoreContext } from "../providers/store-provider";
 import { RelationEditModal } from "../editors/relation/edit-modal";
 import { useAtom } from "jotai";
+import { GroupEditModal } from "../editors/character/group-modal";
 
 export type MetaNode = {
   data: { id: string; label: string; remark?: string; color?: string };
@@ -73,6 +74,7 @@ export default function Relation() {
       <Drawer />
       <RelationShowModal />
       <RelationEditModal />
+      <GroupEditModal />
     </div>
   );
 }

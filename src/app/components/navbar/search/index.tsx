@@ -72,7 +72,6 @@ function SearchInput() {
             setSuggestion(false);
             return;
           } else {
-            console.log(e.currentTarget.value);
           }
         }}
       ></input>

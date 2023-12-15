@@ -19,7 +19,10 @@ import {
   drawerCharacterName,
   drawerIsVisible,
 } from "../editors/character/drawer";
-import { group } from "console";
+import {
+  groupModalIsVisible,
+  groupModalSelectedNames,
+} from "../editors/character/group-modal";
 
 const font = ZCOOL_KuaiLe({ weight: "400", subsets: ["latin"] });
 function randColor(dark: boolean) {
@@ -53,6 +56,9 @@ export default function NetworkGraph({
 
   const [, setDrawerCharacterName] = useAtom(drawerCharacterName);
   const [, setDrawerIsVisible] = useAtom(drawerIsVisible);
+
+  const [, setGroupIsVisible] = useAtom(groupModalIsVisible);
+  const [, setGroupSelectedNames] = useAtom(groupModalSelectedNames);
 
   const metaNodes = useMemo(() => {
     return (
@@ -124,7 +130,10 @@ export default function NetworkGraph({
         fontSize: 14,
         text: metaNodes.find((ef) => ef.data.id === e.id)?.data.label ?? "",
         onclick: (evt: MouseEvent) => {
-          if (!relationSelectorHolding.current && !groupSelectorHolding) {
+          if (
+            !relationSelectorHolding.current &&
+            !groupSelectorHolding.current
+          ) {
             setDrawerCharacterName(e.id);
             setDrawerIsVisible(true);
           }
@@ -187,7 +196,6 @@ export default function NetworkGraph({
 
   const relationSelectorHolding = useRef<boolean>(false);
   const relationSelectorCleanup = () => {
-    console.log("relationSelectorCleanup");
     reletionSelector.current.forEach((e) => {
       e.removeAttribute("stroke");
       e.removeAttribute("strokeWidth");
@@ -196,7 +204,6 @@ export default function NetworkGraph({
   };
 
   const groupSelectorCleanup = () => {
-    console.log("groupSelectorCleanup");
     groupSelector.current.forEach((e) => {
       e.removeAttribute("stroke");
       e.removeAttribute("strokeWidth");
@@ -219,8 +226,16 @@ export default function NetworkGraph({
           relationSelectorHolding.current = false;
           relationSelectorCleanup();
         } else if (event.key === "w") {
+          const names = groupSelector.current.map(
+            (e) => e.getAttribute("data-character-name")!
+          );
+
+          setGroupSelectedNames(names);
+          setGroupIsVisible(true);
           groupSelectorHolding.current = false;
-          groupSelectorCleanup();
+          setTimeout(() => {
+            groupSelectorCleanup();
+          }, 100);
         }
       });
     }
@@ -271,7 +286,31 @@ export default function NetworkGraph({
             relationSelectorCleanup();
           }
         } else if (groupSelectorHolding.current) {
-          console.log("group selecting");
+          const ele = e.target as SVGSVGElement;
+          const tagName = ele.tagName;
+          let target: HTMLElement | null = null;
+          if (tagName === "text") {
+            target = ele.parentElement;
+          } else if (tagName === "path") {
+            target = ele.parentElement?.parentElement || null;
+          }
+          if (target === null) {
+            return;
+          }
+          const cname = target.getAttribute("data-character-name");
+          if (!cname || !metaNodes.find((e) => cname === e.data.id)) {
+            return;
+          }
+          if (
+            groupSelector.current.find(
+              (e) => e.getAttribute("data-character-name") === cname
+            )
+          ) {
+            return;
+          }
+          target.setAttribute("stroke", "red");
+          target.setAttribute("stroke-width", "2px");
+          groupSelector.current = [...groupSelector.current, target];
         }
       }}
       id="download"

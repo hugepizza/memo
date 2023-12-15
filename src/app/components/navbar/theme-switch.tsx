@@ -9,7 +9,6 @@ export default function ThemeSwitch() {
   }, []);
 
   const onDark = theme === "dark";
-  console.log("on dark", theme === "dark");
 
   return (
     <div className="flex flex-row space-x-1">
