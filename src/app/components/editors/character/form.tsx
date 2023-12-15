@@ -99,32 +99,34 @@ export function CharacterForm({}: {}) {
               value={newName}
               onChange={(e) => setNewName(e.currentTarget.value)}
             ></input>
-            <button
-              className={`btn btn-sm  absolute right-1 self-center ${
-                characterName === newName || !newName ? "btn-disabled" : ""
-              }`}
-              onClick={() => {
-                const newMemo = produce(memo, (draft) => {
-                  draft.characters.forEach((ele) => {
-                    if (ele.name === characterName) {
-                      ele.name = newName;
-                    }
+            {characterName && (
+              <button
+                className={`btn btn-sm  absolute right-1 self-center ${
+                  characterName === newName || !newName ? "btn-disabled" : ""
+                }`}
+                onClick={() => {
+                  const newMemo = produce(memo, (draft) => {
+                    draft.characters.forEach((ele) => {
+                      if (ele.name === characterName) {
+                        ele.name = newName;
+                      }
+                    });
+                    draft.relations.forEach((ele) => {
+                      if (ele.source === characterName) {
+                        ele.source = newName;
+                      }
+                      if (ele.target === characterName) {
+                        ele.target = newName;
+                      }
+                    });
                   });
-                  draft.relations.forEach((ele) => {
-                    if (ele.source === characterName) {
-                      ele.source = newName;
-                    }
-                    if (ele.target === characterName) {
-                      ele.target = newName;
-                    }
-                  });
-                });
-                setMemo(newMemo);
-                setCharacterName(newName);
-              }}
-            >
-              save
-            </button>
+                  setMemo(newMemo);
+                  setCharacterName(newName);
+                }}
+              >
+                save
+              </button>
+            )}
           </div>
           <textarea
             className="textarea bg-base-200"
