@@ -3,8 +3,26 @@ import { createLine, createNode, createTitle } from "./rough";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import rough from "roughjs";
 import { useD3Network } from "./d3";
-import { CharacterEditerContext } from "../providers/character-provider";
 import { useTheme } from "next-themes";
+import { StoreContext } from "../providers/store-provider";
+import { useAtom } from "jotai";
+import {
+  relationEditModalIsVisible,
+  relationEditModalSource,
+  relationEditModalTarget,
+} from "../editors/relation/edit-modal";
+import {
+  relationShowModalIsVisible,
+  relationShowModalRelationName,
+} from "../editors/relation/show-modal";
+import {
+  drawerCharacterName,
+  drawerIsVisible,
+} from "../editors/character/drawer";
+import {
+  groupModalIsVisible,
+  groupModalSelectedNames,
+} from "../editors/character/group-modal";
 
 const font = ZCOOL_KuaiLe({ weight: "400", subsets: ["latin"] });
 function randColor(dark: boolean) {
@@ -14,75 +32,63 @@ function randColor(dark: boolean) {
   return colors[Math.floor(Math.random() * 4)];
 }
 export default function NetworkGraph({
-  setEditingCharacterId,
-  setEditingRelationId,
-  setDrawerIsVisible,
-  setModalIsVisible,
-  setHoverCharacterId,
+  setHoverCharacterName,
   width,
   height,
   forceRadius,
 }: {
-  setEditingCharacterId: (v: string | null) => void;
-  setEditingRelationId: (v: string) => void;
-  setDrawerIsVisible: (v: boolean) => void;
-  setModalIsVisible: (v: boolean) => void;
-  setHoverCharacterId: (v: number | null) => void;
+  setHoverCharacterName: (v: string | null) => void;
   forceRadius: number;
   width: number;
   height: number;
 }) {
+  const nodeRadius = width >= 768 ? 28 : 18;
   const { theme } = useTheme();
   const containerRef = useRef<SVGSVGElement | null>(null);
-  // const [backgroundData, setBackgroundData] = useState<string | null>(null);
-  const nodeRadius = width >= 768 ? 28 : 18;
+  const { memo } = useContext(StoreContext);
 
-  const { memo } = useContext(CharacterEditerContext);
+  const [, setSource] = useAtom(relationEditModalSource);
+  const [, setTarget] = useAtom(relationEditModalTarget);
+  const [, setIsVisible] = useAtom(relationEditModalIsVisible);
+
+  const [, setRelationName] = useAtom(relationShowModalRelationName);
+  const [, setRelationIsVisible] = useAtom(relationShowModalIsVisible);
+
+  const [, setDrawerCharacterName] = useAtom(drawerCharacterName);
+  const [, setDrawerIsVisible] = useAtom(drawerIsVisible);
+
+  const [, setGroupIsVisible] = useAtom(groupModalIsVisible);
+  const [, setGroupSelectedNames] = useAtom(groupModalSelectedNames);
+
   const metaNodes = useMemo(() => {
-    return memo?.characters?.map((e) => ({
-      data: {
-        id: `${e.id}`,
-        label: e.name,
-        remark: e.remark || undefined,
-        color: e.group || "#000000",
-      },
-    }));
+    return (
+      memo.characters?.map((e) => ({
+        data: {
+          id: `${e.name}`,
+          label: e.name,
+          remark: e.remark || undefined,
+          color: e.group?.color || "#000000",
+        },
+      })) || []
+    );
   }, [memo]);
 
-  // useEffect(() => {
-  //   const loadImage = async () => {
-  //     try {
-  //       const response = await fetch(
-  //         "https://fonts.gstatic.com/s/zcoolkuaile/v19/tssqApdaRQokwFjFJjvM6h2Wo4z1oXkYxd0yTHEClH7DwjDMeAhAgE_3sefnUmd6tMyz-no9BA.5.woff2"
-  //       );
-  //       const blob = await response.blob();
-  //       var reader = new FileReader();
-  //       reader.readAsDataURL(blob);
-  //       reader.onloadend = function () {
-  //         if (typeof reader.result === "string") {
-  //           setBackgroundData(reader.result as string);
-  //         }
-  //       };
-  //     } catch (error) {
-  //       console.error("Error loading image:", error);
-  //     }
-  //   };
-  //   loadImage();
-  // }, []);
   const metaEdges = useMemo(() => {
-    return memo?.characterRelations?.map((e) => ({
-      data: {
-        id: `${e.id}`,
-        label: e.name ?? "",
-        source: `${e.sourceCharacter?.id}`,
-        target: `${e.targetCharacter?.id}`,
-      },
-    }));
+    return (
+      memo.relations?.map((e) => ({
+        data: {
+          id: `${e.name}`,
+          label: e.name ?? "",
+          source: `${e.source}`,
+          target: `${e.target}`,
+        },
+      })) || []
+    );
   }, [memo]);
 
   const { d3NodeData, d3EdgeData } = useD3Network({
-    metaNodes,
-    metaEdges,
+    metaNodes: metaNodes,
+    metaEdges: metaEdges,
     width: width,
     height: height,
     forceRadius: forceRadius,
@@ -115,7 +121,7 @@ export default function NetworkGraph({
     const baseColor = darkMode ? "white" : "black";
     const rc = rough.svg(containerRef.current!);
 
-    const nnodes = d3NodeData.map((e) => {
+    const roughNodes = d3NodeData.map((e) => {
       const node = createNode({
         rc,
         position: { x: e.x, y: e.y },
@@ -124,19 +130,23 @@ export default function NetworkGraph({
         fontSize: 14,
         text: metaNodes.find((ef) => ef.data.id === e.id)?.data.label ?? "",
         onclick: (evt: MouseEvent) => {
-          setEditingCharacterId(e.id);
-          setDrawerIsVisible(true);
+          if (
+            !relationSelectorHolding.current &&
+            !groupSelectorHolding.current
+          ) {
+            setDrawerCharacterName(e.id);
+            setDrawerIsVisible(true);
+          }
         },
-        onmouseover: (evt: MouseEvent) =>
-          setHoverCharacterId(parseInt(e.id, 10)),
-        onmouseout: (evt: MouseEvent) => setHoverCharacterId(null),
+        onmouseover: (evt: MouseEvent) => setHoverCharacterName(e.id),
+        onmouseout: (evt: MouseEvent) => setHoverCharacterName(null),
       });
 
       return node;
     });
-    containerRef.current?.append(...nnodes);
+    containerRef.current?.append(...roughNodes);
 
-    const nlinks: SVGGElement[] = d3EdgeData.map((e) => {
+    const roughLinks: SVGGElement[] = d3EdgeData.map((e) => {
       const lines = createLine({
         rc,
         position: {
@@ -153,18 +163,18 @@ export default function NetworkGraph({
         nodeRadius: nodeRadius,
         fontSize: 16,
         onclick: (evt: MouseEvent) => {
-          setEditingRelationId(e.id);
-          setModalIsVisible(true);
+          setRelationName(e.id);
+          setRelationIsVisible(true);
         },
       });
       return lines;
     });
 
-    containerRef.current?.append(...nlinks);
+    containerRef.current?.append(...roughLinks);
 
     const fontSize = width >= 678 ? 36 : 24;
     const ntitle = createTitle({
-      content: memo.worksTitle,
+      content: memo.title,
       color: baseColor,
       fontSize: fontSize,
     });
@@ -179,8 +189,130 @@ export default function NetworkGraph({
     };
   }, [d3EdgeData, d3NodeData, darkMode, metaEdges, metaNodes]);
 
+  const reletionSelector = useRef<HTMLElement[]>([]);
+  const groupSelector = useRef<HTMLElement[]>([]);
+
+  const groupSelectorHolding = useRef<boolean>(false);
+
+  const relationSelectorHolding = useRef<boolean>(false);
+  const relationSelectorCleanup = () => {
+    reletionSelector.current.forEach((e) => {
+      e.removeAttribute("stroke");
+      e.removeAttribute("strokeWidth");
+    });
+    reletionSelector.current = [];
+  };
+
+  const groupSelectorCleanup = () => {
+    groupSelector.current.forEach((e) => {
+      e.removeAttribute("stroke");
+      e.removeAttribute("strokeWidth");
+    });
+    groupSelector.current = [];
+  };
+
+  useEffect(() => {
+    const parentElement = document.getElementById("root");
+    if (parentElement) {
+      parentElement.addEventListener("keydown", (event) => {
+        if (event.key === "q") {
+          relationSelectorHolding.current = true;
+        } else if (event.key === "w") {
+          groupSelectorHolding.current = true;
+        }
+      });
+      parentElement.addEventListener("keyup", (event) => {
+        if (event.key === "q") {
+          relationSelectorHolding.current = false;
+          relationSelectorCleanup();
+        } else if (event.key === "w") {
+          const names = groupSelector.current.map(
+            (e) => e.getAttribute("data-character-name")!
+          );
+
+          setGroupSelectedNames(names);
+          setGroupIsVisible(true);
+          groupSelectorHolding.current = false;
+          setTimeout(() => {
+            groupSelectorCleanup();
+          }, 100);
+        }
+      });
+    }
+  }, []);
+
   return (
     <svg
+      tabIndex={0}
+      onClick={(e) => {
+        if (relationSelectorHolding.current) {
+          const ele = e.target as SVGSVGElement;
+          const tagName = ele.tagName;
+          let target: HTMLElement | null = null;
+          if (tagName === "text") {
+            target = ele.parentElement;
+          } else if (tagName === "path") {
+            target = ele.parentElement?.parentElement || null;
+          }
+          if (target === null) {
+            return;
+          }
+          const cname = target.getAttribute("data-character-name");
+          if (!cname || !metaNodes.find((e) => cname === e.data.id)) {
+            return;
+          }
+          if (
+            reletionSelector.current.find(
+              (e) => e.getAttribute("data-character-name") === cname
+            )
+          ) {
+            return;
+          }
+          target.setAttribute("stroke", "red");
+          target.setAttribute("strokeWidth", "2");
+          reletionSelector.current = [...reletionSelector.current, target];
+          if (reletionSelector.current.length === 2) {
+            console.group("MultiClick all selected");
+            console.groupEnd();
+
+            setSource(
+              reletionSelector.current[0].getAttribute("data-character-name")!
+            );
+            setTarget(
+              reletionSelector.current[1].getAttribute("data-character-name")!
+            );
+            setIsVisible(true);
+
+            relationSelectorCleanup();
+          }
+        } else if (groupSelectorHolding.current) {
+          const ele = e.target as SVGSVGElement;
+          const tagName = ele.tagName;
+          let target: HTMLElement | null = null;
+          if (tagName === "text") {
+            target = ele.parentElement;
+          } else if (tagName === "path") {
+            target = ele.parentElement?.parentElement || null;
+          }
+          if (target === null) {
+            return;
+          }
+          const cname = target.getAttribute("data-character-name");
+          if (!cname || !metaNodes.find((e) => cname === e.data.id)) {
+            return;
+          }
+          if (
+            groupSelector.current.find(
+              (e) => e.getAttribute("data-character-name") === cname
+            )
+          ) {
+            return;
+          }
+          target.setAttribute("stroke", "red");
+          target.setAttribute("stroke-width", "2px");
+          groupSelector.current = [...groupSelector.current, target];
+        }
+      }}
       id="download"
       style={{
         width: "100%",

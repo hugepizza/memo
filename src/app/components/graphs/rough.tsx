@@ -100,6 +100,7 @@ export function createNode({
   const nodeEle = rc.circle(position.x, position.y, radius, {
     stroke: color,
     fill: color,
+    fillStyle: "solid",
   });
   const textEle = createNodeText({
     content: text,
@@ -113,10 +114,10 @@ export function createNode({
   const f = document.createElementNS("http://www.w3.org/2000/svg", "g");
   f.setAttribute("x", position.x.toString());
   f.setAttribute("y", position.y.toString());
+  f.setAttribute("data-character-name", text);
   f.onclick = onclick;
   f.appendChild(nodeEle);
   f.appendChild(textEle);
-
   return f;
 }
 

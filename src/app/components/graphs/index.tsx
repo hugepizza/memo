@@ -1,17 +1,18 @@
 "use client";
-import { useTheme } from "next-themes";
 
-import { useContext, useState } from "react";
-const font = ZCOOL_KuaiLe({ weight: "400", subsets: ["latin"] });
+import { useContext, useEffect, useState } from "react";
 
-import { CharacterEditerContext } from "../providers/character-provider";
-import { Drawer } from "../editors/character/drawer";
+import { Drawer, drawerIsVisible } from "../editors/character/drawer";
 import { Pannal } from "./pannel";
-import { RelationModal } from "../editors/relation/modal";
-import { Sedgwick_Ave, ZCOOL_KuaiLe } from "next/font/google";
+import { RelationShowModal } from "../editors/relation/show-modal";
+import { ZCOOL_KuaiLe } from "next/font/google";
 import NetworkGraph from "./network";
 import { useSession } from "next-auth/react";
-import { Character } from "@/app/tpyes/model";
+import { Character } from "@/app/tpyes/memo";
+import { StoreContext } from "../providers/store-provider";
+import { RelationEditModal } from "../editors/relation/edit-modal";
+import { useAtom } from "jotai";
+import { GroupEditModal } from "../editors/character/group-modal";
 
 export type MetaNode = {
   data: { id: string; label: string; remark?: string; color?: string };
@@ -22,22 +23,21 @@ export type MetaEdge = {
 };
 
 export default function Relation() {
-  const { memo } = useContext(CharacterEditerContext);
-  const session = useSession();
-  const isOwner = session.data?.user?.id === memo.userId;
-  const screenWidth = document.documentElement.clientWidth;
-  const screenHeight = document.documentElement.clientHeight;
-  const [forceRadius, setForceRadius] = useState(
-    window.innerWidth >= 768 ? 80 : 60
-  );
+  const { memo } = useContext(StoreContext);
+  const [screenWidth, setScreenWidth] = useState(0);
+  const [screenHeight, setScreenHeight] = useState(0);
 
-  const [editingCharacterId, setEditingCharacterId] = useState<string | null>(
+  const [forceRadius, setForceRadius] = useState(0);
+  useEffect(() => {
+    setScreenWidth(document.documentElement.clientWidth);
+    setScreenHeight(document.documentElement.clientHeight);
+    setForceRadius(document.documentElement.clientWidth >= 768 ? 80 : 60);
+  }, []);
+
+  const [hoverCharacterName, setHoverCharacterName] = useState<string | null>(
     null
   );
-  const [editingRelationId, setEditingRelationId] = useState<string>("");
-  const [drawerIsVisible, setDrawerIsVisible] = useState(false);
-  const [modalIsVisible, setModalIsVisible] = useState(false);
-  const [hoverCharacterId, setHoverCharacterId] = useState<number | null>(null);
+
   return (
     <div
       style={{
@@ -52,50 +52,38 @@ export default function Relation() {
           height: screenHeight,
         }}
       >
-        {memo.characters.length > 0 ? (
+        {memo.characters && memo.characters.length > 0 ? (
           <>
             <NetworkGraph
               height={screenHeight}
               width={screenWidth}
-              setDrawerIsVisible={isOwner ? setDrawerIsVisible : () => {}}
-              setEditingCharacterId={isOwner ? setEditingCharacterId : () => {}}
-              setEditingRelationId={setEditingRelationId}
-              setModalIsVisible={setModalIsVisible}
               forceRadius={forceRadius}
-              setHoverCharacterId={setHoverCharacterId}
+              setHoverCharacterName={setHoverCharacterName}
             />
-            <CharacterDetail id={hoverCharacterId}></CharacterDetail>
+            <CharacterDetail name={hoverCharacterName}></CharacterDetail>
             <Pannal
               elememtId={"download"}
-              setEditorIsVisible={setDrawerIsVisible}
-              setEditingCharacterId={setEditingCharacterId}
               forceRadius={forceRadius}
               setForceRadius={setForceRadius}
             ></Pannal>
           </>
         ) : (
-          <Placeholder setDrawerIsVisible={setDrawerIsVisible} />
+          <Placeholder />
         )}
       </div>
-      <Drawer
-        characterId={editingCharacterId}
-        isVisible={drawerIsVisible}
-        setIsVisible={setDrawerIsVisible}
-      ></Drawer>
-      <RelationModal
-        relationId={editingRelationId}
-        isVisible={modalIsVisible}
-        setIsVisible={setModalIsVisible}
-      ></RelationModal>
+      <Drawer />
+      <RelationShowModal />
+      <RelationEditModal />
+      <GroupEditModal />
     </div>
   );
 }
 
-function CharacterDetail({ id }: { id: number | null }) {
+function CharacterDetail({ name }: { name: string | null }) {
   let character: Character | undefined = undefined;
-  const { memo } = useContext(CharacterEditerContext);
-  if (id) {
-    character = memo.characters.find((e) => e.id === id);
+  const { memo } = useContext(StoreContext);
+  if (name) {
+    character = memo.characters?.find((e) => e.name === name);
   }
   return (
     <div
@@ -119,11 +107,8 @@ function CharacterDetail({ id }: { id: number | null }) {
   );
 }
 
-function Placeholder({
-  setDrawerIsVisible,
-}: {
-  setDrawerIsVisible: (v: boolean) => void;
-}) {
+function Placeholder() {
+  const [, setDrawerIsVisible] = useAtom(drawerIsVisible);
   return (
     <div className="hero min-h-screen bg-base-200">
       <div className="hero-content text-center">

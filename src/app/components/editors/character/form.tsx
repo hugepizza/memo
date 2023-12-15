@@ -1,17 +1,13 @@
 import { useContext, useEffect, useState } from "react";
-import { Relation } from "@/app/tpyes/model";
-import toast from "react-hot-toast";
-import { CharacterEditerContext } from "../../providers/character-provider";
 import { AddButton, DeleteButton, UpdateButton } from "../../button";
-import { RelationEditerContext } from "../../providers/relation-provider";
-import { set } from "lodash";
-export function CharacterForm({
-  id,
-  setIsVisible,
-}: {
-  id: string | null;
-  setIsVisible: (v: boolean) => void;
-}) {
+import { StoreContext } from "../../providers/store-provider";
+import { Character } from "@/app/tpyes/memo";
+import toast from "react-hot-toast";
+import { useDebounce } from "use-debounce";
+import { useAtom } from "jotai";
+import { drawerCharacterName, drawerIsVisible } from "./drawer";
+import { produce } from "immer";
+export function CharacterForm({}: {}) {
   const group = [
     { color: "#000000" },
     { color: "#F97B22" },
@@ -23,53 +19,118 @@ export function CharacterForm({
     { color: "#FF4B91" },
     { color: "#FFCD4B" },
   ];
-  const {
-    memoId,
-    isRequesting,
-    updateCharacter,
-    deleteCharacter,
-    addCharacter,
-  } = useContext(CharacterEditerContext);
-  const [name, setName] = useState("");
-  const [remark, setRemark] = useState("");
-  const { memo } = useContext(CharacterEditerContext);
-  const [color, setColor] = useState(group[0].color);
+
+  // character name when open the drawer
+  const [characterName, setCharacterName] = useAtom(drawerCharacterName);
+  const [, setIsVisible] = useAtom(drawerIsVisible);
+  const [newName, setNewName] = useState(characterName || "");
+  const [newRemark, setNewRemark] = useState("");
+
+  const { memo, setMemo } = useContext(StoreContext);
+  const [newColor, setNewColor] = useState(group[0].color);
   useEffect(() => {
-    if (id) {
+    if (characterName) {
       const character = memo.characters.findLast(
-        (e) => e.id === parseInt(id, 10)
+        (e) => e.name === characterName
       );
       if (character) {
-        setName(character.name);
-        setRemark(character.remark ?? "");
-        setColor(character.group ?? "");
+        setNewName(character.name);
+        setNewRemark(character.remark ?? "");
+        setNewColor(character.group?.color ?? "");
       }
     } else {
-      setName("");
-      setRemark("");
-      setColor("");
+      setNewName("");
+      setNewRemark("");
+      setNewColor("");
     }
-  }, [memo, id]);
+  }, [memo, characterName]);
+
+  // save on change
+  useEffect(() => {
+    if (characterName) {
+      const newMemo = produce(memo, (draft) => {
+        draft.characters.forEach((ele) => {
+          if (ele.name === characterName) {
+            ele.remark = newName;
+            if (!ele.group) {
+              ele.group = { name: "", color: newColor };
+            } else {
+              ele.group.color = newColor;
+            }
+          }
+        });
+      });
+      setMemo(newMemo);
+    }
+  }, [newRemark, newColor]);
 
   return (
     <div className="space-y-12">
       <div className="space-y-2">
         <div className="flex flex-col space-y-2">
-          <p className="text-2xl">{name}</p>
+          <p className="text-2xl">
+            {characterName}
+            {characterName && (
+              <div className="float-right">
+                <DeleteButton
+                  disable={false}
+                  action={() => {
+                    const ch = memo.characters.filter(
+                      (e) => e.name != characterName
+                    );
+                    setMemo({
+                      ...memo,
+                      characters: ch,
+                    });
+                    toast.success("success");
+                    setIsVisible(false);
+                    setCharacterName(null);
+                  }}
+                />
+              </div>
+            )}
+          </p>
           <div className="divider">Character Infomation</div>
-
-          <input
-            type="text"
-            className="input bg-base-200"
-            placeholder={id ? "" : "new character name"}
-            value={name}
-            onChange={(e) => setName(e.currentTarget.value)}
-          ></input>
+          <div className="w-full relative flex items-center">
+            <input
+              type="text"
+              className="input bg-base-200 w-full"
+              placeholder={characterName ? "" : "new character name"}
+              value={newName}
+              onChange={(e) => setNewName(e.currentTarget.value)}
+            ></input>
+            <button
+              className={`btn btn-sm  absolute right-1 self-center ${
+                characterName === newName || !newName ? "btn-disabled" : ""
+              }`}
+              onClick={() => {
+                const newMemo = produce(memo, (draft) => {
+                  draft.characters.forEach((ele) => {
+                    if (ele.name === characterName) {
+                      ele.name = newName;
+                    }
+                  });
+                  draft.relations.forEach((ele) => {
+                    if (ele.source === characterName) {
+                      ele.source = newName;
+                    }
+                    if (ele.target === characterName) {
+                      ele.target = newName;
+                    }
+                  });
+                });
+                setMemo(newMemo);
+                setCharacterName(newName);
+              }}
+            >
+              save
+            </button>
+          </div>
           <textarea
             className="textarea bg-base-200"
-            value={remark}
+            value={newRemark}
             placeholder="add remark here..."
-            onChange={(e) => setRemark(e.currentTarget.value)}
+            onChange={(e) => setNewRemark(e.currentTarget.value)}
           ></textarea>
         </div>
         <div className="flex flex-wrap sm:space-x-2 space-x-1 items-center">
@@ -78,9 +139,9 @@ export function CharacterForm({
               <button
                 className={`btn btn-xs btn-square`}
                 style={{ background: ele.color }}
-                onClick={() => setColor(ele.color)}
+                onClick={() => setNewColor(ele.color)}
               >
-                {ele.color === color ? (
+                {ele.color === newColor ? (
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 20 20"
@@ -101,106 +162,108 @@ export function CharacterForm({
           ))}
         </div>
         <div className="flex space-x-2 justify-end">
-          {id && (
+          {newName && !characterName && (
             <button
-              className={`btn ${isRequesting ? "btn-disabled" : "btn-warning"}`}
+              className={`btn`}
               onClick={() => {
-                deleteCharacter(parseInt(id, 10))
-                  .then(() => toast.success("Deleted!"))
-                  .then(() => setIsVisible(false))
-                  .catch((e) => toast.error("Deleted failed!"));
+                const c: Character = {
+                  name: newName,
+                  remark: newRemark,
+                  group: { name: "", color: newColor },
+                };
+                const ch = memo.characters.concat(c);
+                setMemo({ ...memo, characters: ch });
               }}
             >
-              Delete
+              Save
             </button>
           )}
-          <button
-            className={`btn ${isRequesting ? "btn-disabled" : ""}`}
-            onClick={() => {
-              (!id
-                ? addCharacter(memoId, name, remark, color)
-                : updateCharacter(parseInt(id, 10), name, remark, color)
-              )
-                .then(() => toast.success("Saved!"))
-                .then(() => setIsVisible(false))
-                .catch((e) => toast.error("Saved failed!"));
-            }}
-          >
-            Save
-          </button>
         </div>
       </div>
       <div className="space-y-2">
         <div className="divider">Relations</div>
-        {id && <RelationList characterId={id}></RelationList>}
+        {characterName && (
+          <RelationList characterName={characterName}></RelationList>
+        )}
       </div>
     </div>
   );
 }
 
-function RelationList({ characterId }: { characterId: string }) {
-  const { memo } = useContext(RelationEditerContext);
-  const id = parseInt(characterId, 10);
-  const relations = memo.characterRelations.filter(
-    (e) => e.sourceCharacterId === id
-  );
-  const r = relations.map((e) => (
+function RelationList({ characterName }: { characterName: string }) {
+  const { memo } = useContext(StoreContext);
+  const relations = memo.relations?.filter((e) => e.source === characterName);
+  const r = relations?.map((e) => (
     <ReationUpdate
       key={e.id}
-      characterId={characterId}
-      relation={e}
+      characterName={characterName}
+      relationId={e.id}
     ></ReationUpdate>
   ));
   return (
     <div className="flex flex-col space-y-2">
       {r}
-      <ReationUpdate characterId={characterId} relation={null}></ReationUpdate>
+      <ReationUpdate
+        characterName={characterName}
+        relationId={null}
+      ></ReationUpdate>
     </div>
   );
 }
 
 function ReationUpdate({
-  characterId,
-  relation,
+  characterName,
+  relationId,
 }: {
-  characterId: string;
-  relation: Relation | null;
+  characterName: string;
+  relationId: string | null;
 }) {
-  const [selectedCharacterId, setSelectedCharacterId] = useState<number | null>(
-    null
-  );
-  const [newRelationName, setNewRelationName] = useState(
-    relation ? relation.name! : ""
-  );
-  const { isRequesting, updateRelation, deleteRelation, addRelation } =
-    useContext(RelationEditerContext);
-  const { memo } = useContext(RelationEditerContext);
-  const id = parseInt(characterId, 10);
+  const { memo, setMemo } = useContext(StoreContext);
+  const [selectedCharacterName, setSelectedCharacterName] = useState<
+    string | null
+  >(null);
+  const relation = memo.relations.find((e) => e.id === relationId);
+  const [newRelationName, setNewRelationName] = useState(relation?.name);
+  const [debouncedNewRelationName] = useDebounce(newRelationName, 500);
+  useEffect(() => {
+    if (relationId && selectedCharacterName) {
+      const re = memo.relations.map((e) => {
+        if (e.id === relationId) {
+          return {
+            ...e,
+            target: selectedCharacterName,
+            name: debouncedNewRelationName!,
+          };
+        }
+        return e;
+      });
+      setMemo({ ...memo, relations: re });
+    }
+  }, [debouncedNewRelationName, selectedCharacterName]);
 
-  const oldTarget = relation?.targetCharacterId;
-  const oldTargetName = relation?.targetCharacter.name;
+  const oldTarget = relation?.target || "";
 
-  const character = memo.characters.find((e) => id === e.id);
-  if (!character) {
-    return <></>;
-  }
-  const characters = memo.characters.filter(
-    (e) => e.id != id && e.id != oldTarget
-  );
+  const related = memo.relations
+    .filter((e) => e.source === characterName)
+    .map((e) => e.target);
+
+  const characters = memo.characters
+    .filter((e) => e.name != characterName)
+    .filter((e) => related.find((a) => a === e.name) === undefined)
+    .map((e) => e.name);
+
+  // .concat(oldTarget);
   const selector = (
     <label className="form-control">
       <select
         className="select select-sm"
-        onChange={(e) =>
-          setSelectedCharacterId(parseInt(e.currentTarget.value, 10))
-        }
-        defaultValue={relation ? oldTargetName : "choose"}
+        onChange={(e) => setSelectedCharacterName(e.currentTarget.value)}
+        defaultValue={relation ? oldTarget : "choose"}
       >
-        <option>{relation ? oldTargetName : "choose"}</option>
-
+        <option>{relation ? oldTarget : "choose"}</option>
         {characters.map((e) => (
-          <option value={e.id} key={e.id}>
-            {e.name}
+          <option value={e} key={e}>
+            {e}
           </option>
         ))}
       </select>
@@ -210,7 +273,7 @@ function ReationUpdate({
     <div className="flex items-center space-x-4">
       <div className="flex flex-wrap space-x-4 justify-between grow">
         <div className="flex flex-wrap space-x-4 ">
-          <span className="badge badge-lg badge-neutral">{character.name}</span>
+          <span className="badge badge-lg badge-neutral">{characterName}</span>
           <input
             type="text"
             className="input input-sm"
@@ -224,32 +287,10 @@ function ReationUpdate({
       <div className="space-x-1">
         {relation ? (
           <>
-            <UpdateButton
-              action={() => {
-                let newTargetId = selectedCharacterId;
-                if (newRelationName.trim() === "") {
-                  return;
-                }
-                if (!newTargetId && relation.name === newRelationName) {
-                  return;
-                }
-                if (!newTargetId) {
-                  newTargetId = relation.targetCharacterId;
-                }
-                updateRelation(relation?.id!, id, newTargetId, newRelationName)
-                  .then(() => toast.success("Updated!"))
-                  .catch((e) => toast.error("Updated failed!"));
-              }}
-              disable={
-                newRelationName.trim() === "" ||
-                (newRelationName === relation.name && !selectedCharacterId)
-              }
-            ></UpdateButton>
             <DeleteButton
               action={() => {
-                deleteRelation(relation?.id!)
-                  .then(() => toast.success("Deleted!"))
-                  .catch((e) => toast.error("Deleted failed!"));
+                const re = memo.relations.filter((e) => e.id === relationId);
+                setMemo({ ...memo, relations: re });
               }}
               disable={false}
             ></DeleteButton>
@@ -259,26 +300,16 @@ function ReationUpdate({
             <AddButton
               disable={false}
               action={() => {
-                if (!selectedCharacterId) {
-                  toast.error("select a target!");
+                if (!newRelationName || !selectedCharacterName) {
                   return;
                 }
-                if (newRelationName === "") {
-                  toast.error("enter a relationship name!");
-                  return;
-                }
-                addRelation(
-                  memo.id,
-                  character.id,
-                  selectedCharacterId,
-                  newRelationName
-                )
-                  .then(() => toast.success("Added!"))
-                  .then(() => {
-                    setNewRelationName("");
-                    setSelectedCharacterId(null);
-                  })
-                  .catch((e) => toast.error("Added failed!"));
+                const re = memo.relations.concat({
+                  id: new Date().getTime().toString(),
+                  name: newRelationName,
+                  target: selectedCharacterName,
+                  source: characterName,
+                });
+                setMemo({ ...memo, relations: re });
               }}
             ></AddButton>
             <DeleteButton action={() => {}} disable={true}></DeleteButton>

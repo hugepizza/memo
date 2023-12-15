@@ -73,8 +73,6 @@ model Works {
   smallThumbnail String?
   thumbnail      String?
 
-  memo Memo[]
-
   createdByUserId String?
   createdByUser   User?   @relation(fields: [createdByUserId], references: [id])
 
@@ -92,85 +90,15 @@ model Memo {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  userId             String
-  startedAt          DateTime?
-  finishedAt         DateTime?
-  characters         Character[]
-  characterRelations CharacterRelation[]
-  events             Event[]
-  works              Works               @relation(fields: [worksId], references: [id])
-  worksId            String
-  worksTitle         String
-  user               User                @relation(fields: [userId], references: [id])
-  visibility         MemoVisibility      @default(PUBLIC)
-
-  @@index([userId])
-}
-
-model Character {
-  id        Int       @id @default(autoincrement())
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
-
   userId String
-  memoId String
+  user   User   @relation(fields: [userId], references: [id])
 
-  name   String
-  remark String?
-  group  String? @default("#000000")
+  title     String
+  content   Json
+  cover String?
 
-  sourceCharacterRelations CharacterRelation[] @relation(name: "sourceCharacterRelations")
-  targetCharacterRelations CharacterRelation[] @relation(name: "targetCharacterRelations")
+  visibility MemoVisibility @default(PUBLIC)
 
-  memo Memo @relation(fields: [memoId], references: [id])
-
-  @@unique([memoId, name])
+  @@unique([userId, title])
   @@index([userId])
-  @@index([memoId])
-}
-
-model CharacterRelation {
-  id        Int       @id @default(autoincrement())
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
-
-  userId String
-  memoId String
-
-  sourceCharacterId Int
-  targetCharacterId Int
-
-  name   String?
-  remark String?
-
-  sourceCharacter Character @relation(fields: [sourceCharacterId], references: [id], name: "sourceCharacterRelations")
-  targetCharacter Character @relation(fields: [targetCharacterId], references: [id], name: "targetCharacterRelations")
-  memo            Memo      @relation(fields: [memoId], references: [id])
-
-  @@unique([memoId, sourceCharacterId, targetCharacterId])
-  @@index([userId])
-  @@index([memoId])
-}
-
-model Event {
-  id        Int       @id @default(autoincrement())
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
-
-  userId String
-  memoId String
-
-  progressPercentage Int?
-  page               Int?
-  name               String
-  remark             String?
-  date               DateTime?
-
-  memo Memo @relation(fields: [memoId], references: [id])
-
-  @@index([userId])
-  @@index([memoId])
 }

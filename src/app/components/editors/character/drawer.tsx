@@ -1,15 +1,11 @@
+import { atom, useAtom } from "jotai";
 import { CharacterForm } from "./form";
-import { RelationModal } from "../relation/modal";
 
-export function Drawer({
-  characterId,
-  isVisible,
-  setIsVisible,
-}: {
-  characterId: string | null;
-  isVisible: boolean;
-  setIsVisible: (v: boolean) => void;
-}) {
+export const drawerCharacterName = atom<string | null>(null);
+export const drawerIsVisible = atom(false);
+
+export function Drawer() {
+  const [isVisible, setIsVisible] = useAtom(drawerIsVisible);
   return (
     <div className="drawer z-20">
       <input
@@ -25,10 +21,12 @@ export function Drawer({
           htmlFor="my-drawer"
           aria-label="close sidebar"
           className="drawer-overlay"
-          onClick={() => setIsVisible(false)}
+          onClick={() => {
+            setIsVisible(false);
+          }}
         ></label>
-        <ul className="menu p-4 w-4/5 sm:w-3/5 min-h-full bg-base-100 text-base-content">
-          <CharacterForm setIsVisible={setIsVisible} id={characterId} />
+        <ul className="menu p-4 w-4/5 sm:w-2/5 min-h-full bg-base-100 text-base-content">
+          <CharacterForm />
         </ul>
       </div>
     </div>

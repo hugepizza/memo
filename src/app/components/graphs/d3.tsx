@@ -37,8 +37,6 @@ export function useD3Network({
   const [ndata, setNdata] = useState<NodeData[]>([]);
   const [ldata, setLdata] = useState<LinkData[]>([]);
 
-  const [dn] = useDebounce(ndata, 16);
-  const [dl] = useDebounce(ldata, 16);
   useEffect(() => {
     const nodes: D3Node[] = metaNodes.map((e, i) => ({
       index: i,
@@ -134,5 +132,5 @@ export function useD3Network({
       .on("end", () => {});
     simulation.alphaMin(0.1);
   }, [width, height, metaEdges, metaNodes, forceRadius]);
-  return { d3NodeData: dn, d3EdgeData: dl };
+  return { d3NodeData: ndata, d3EdgeData: ldata };
 }

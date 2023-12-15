@@ -1,3 +1,6 @@
+-- CreateEnum
+CREATE TYPE "MemoVisibility" AS ENUM ('PRIVATE', 'PUBLIC');
+
 -- CreateTable
 CREATE TABLE "Account" (
     "id" TEXT NOT NULL,
@@ -45,53 +48,38 @@ CREATE TABLE "VerificationToken" (
 );
 
 -- CreateTable
-CREATE TABLE "Reading" (
+CREATE TABLE "Works" (
+    "id" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
+    "googleId" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "authors" TEXT[],
+    "publisher" TEXT,
+    "publishedDate" TEXT,
+    "description" TEXT,
+    "pageCount" INTEGER,
+    "smallThumbnail" TEXT,
+    "thumbnail" TEXT,
+    "createdByUserId" TEXT,
+
+    CONSTRAINT "Works_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Memo" (
     "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
     "userId" TEXT NOT NULL,
-    "startedAt" TIMESTAMP(3),
-    "finishedAt" TIMESTAMP(3),
+    "title" TEXT NOT NULL,
+    "content" JSONB NOT NULL,
+    "thumbnail" TEXT,
+    "visibility" "MemoVisibility" NOT NULL DEFAULT 'PUBLIC',
 
-    CONSTRAINT "Reading_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "Character" (
-    "id" SERIAL NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-    "deletedAt" TIMESTAMP(3),
-    "userId" TEXT NOT NULL,
-    "workId" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "remark" TEXT,
-
-    CONSTRAINT "Character_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "CharacterRelation" (
-    "id" SERIAL NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-    "deletedAt" TIMESTAMP(3),
-    "userId" TEXT NOT NULL,
-    "workId" TEXT NOT NULL,
-    "sourceCharacterId" TEXT NOT NULL,
-    "targetCharacterId" TEXT NOT NULL,
-    "name" TEXT,
-    "remark" TEXT,
-
-    CONSTRAINT "CharacterRelation_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "Event" (
-    "id" SERIAL NOT NULL,
-
-    CONSTRAINT "Event_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Memo_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -109,8 +97,26 @@ CREATE UNIQUE INDEX "VerificationToken_token_key" ON "VerificationToken"("token"
 -- CreateIndex
 CREATE UNIQUE INDEX "VerificationToken_identifier_token_key" ON "VerificationToken"("identifier", "token");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "Works_googleId_key" ON "Works"("googleId");
+
+-- CreateIndex
+CREATE INDEX "Works_googleId_idx" ON "Works"("googleId");
+
+-- CreateIndex
+CREATE INDEX "Memo_userId_idx" ON "Memo"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Memo_userId_title_key" ON "Memo"("userId", "title");
+
 -- AddForeignKey
 ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Works" ADD CONSTRAINT "Works_createdByUserId_fkey" FOREIGN KEY ("createdByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Memo" ADD CONSTRAINT "Memo_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -1,32 +1,22 @@
 import { useContext, useEffect, useState } from "react";
-import { Relation } from "@/app/tpyes/model";
 import toast from "react-hot-toast";
-import { AddButton, DeleteButton, UpdateButton } from "../../button";
-import { RelationEditerContext } from "../../providers/relation-provider";
-export function RelationModal({
-  relationId,
-  isVisible,
-  setIsVisible,
-}: {
-  relationId: string;
-  isVisible: boolean;
-  setIsVisible: (v: boolean) => void;
-}) {
-  const [newRelationNama, setNewRelationNama] = useState("");
-  const [newTargetId, setNewTargetId] = useState<null | null>();
-  const [newSourceId, setNewSourceId] = useState<null | null>();
-  const { memo, updateRelation, deleteRelation, isRequesting } = useContext(
-    RelationEditerContext
-  );
-  const id = parseInt(relationId, 10);
-  const relation = memo.characterRelations.find((e) => e.id === id);
+import { StoreContext } from "../../providers/store-provider";
+import { Relation } from "@/app/tpyes/memo";
+import { atom, useAtom } from "jotai";
+
+export const relationShowModalRelationName = atom("");
+export const relationShowModalIsVisible = atom(false);
+
+export function RelationShowModal({}: {}) {
+  const [relationName] = useAtom(relationShowModalRelationName);
+  const [isVisible, setIsVisible] = useAtom(relationShowModalIsVisible);
+  const { memo } = useContext(StoreContext);
+  const relation = memo.relations.find((e) => e.name === relationName);
   if (!relation) {
     return <></>;
   }
-  const reverseRelation = memo.characterRelations.find(
-    (ele) =>
-      ele.sourceCharacterId === relation.targetCharacterId &&
-      ele.targetCharacterId === relation.sourceCharacterId
+  const reverseRelation = memo.relations.find(
+    (ele) => ele.source === relation.target && ele.target === relation.source
   );
   return (
     <dialog
@@ -81,13 +71,13 @@ function Card({ relation }: { relation: Relation }) {
   return (
     <div className="flex w-full">
       <div className="grid h-32 flex-grow card bg-base-300 rounded-box place-items-center">
-        {relation.sourceCharacter.name}
+        {relation.source}
       </div>
       <div className="divider divider-horizontal whitespace-normal grow">
         {relation.name}
       </div>
       <div className="grid h-32 flex-grow card bg-base-300 rounded-box place-items-center">
-        {relation.targetCharacter.name}
+        {relation.target}
       </div>
     </div>
   );
