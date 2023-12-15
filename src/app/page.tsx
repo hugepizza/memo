@@ -118,7 +118,7 @@ function Fitst() {
               </Link>
               <Link
                 data-sveltekit-preload-data=""
-                href="/works"
+                href="/memo"
                 className="btn btn-neutral md:btn-lg md:btn-wide group px-12"
               >
                 Get started

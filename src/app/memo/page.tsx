@@ -13,12 +13,10 @@ import CoverModal from "./cover-modal";
 import { atom, useAtom } from "jotai";
 import DeleteModal from "./delete-modal";
 import PullModal from "./pull-modal";
-import { listLocalMemo } from "../localstore/memo";
+import useLocalMemo from "../localstore/memo";
 
-const memo: Memo[] = listLocalMemo();
 export const editingTitle = atom("");
 export const editingCloud = atom(false);
-export const localMemo = atom(memo);
 export default function Page() {
   const [tab, setTab] = useState("Local");
   return (
@@ -62,10 +60,10 @@ export default function Page() {
 }
 
 function Local() {
-  const [memo] = useAtom(localMemo);
+  const { localMemo } = useLocalMemo();
   return (
     <div className="grid grid-cols-1 sm:gap-4 sm:grid-cols-4 w-full">
-      {memo.map((ele) => (
+      {localMemo.map((ele) => (
         <MemoCard key={ele.title} memo={ele} />
       ))}
     </div>
@@ -152,7 +150,7 @@ function MemoCard({ memo, cloud }: { memo: Memo; cloud?: boolean }) {
   return (
     <div className="flex-grow h-96">
       <Link
-        href={"/memo/" + memo.title + "/local" + "#graph"}
+        href={"/memo/" + memo.title + "#graph"}
         onClick={(e) => {
           if (cloud) {
             e.preventDefault();
@@ -183,7 +181,7 @@ function MemoCard({ memo, cloud }: { memo: Memo; cloud?: boolean }) {
       </Link>
       <div className="flex flex-row items-center justify-between">
         <p className="truncate">{memo.title}</p>
-        <div className="dropdown">
+        <div className="dropdown dropdown-end">
           <div tabIndex={0} role="button" className="m-1 btn btn-sm btn-circle">
             <svg
               xmlns="http://www.w3.org/2000/svg"

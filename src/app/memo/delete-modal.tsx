@@ -2,28 +2,24 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import {
-  createLocalMemo,
-  deleteLocalMemo,
-  listLocalMemo,
-} from "../localstore/memo";
+
 import toast from "react-hot-toast";
-import { editingCloud, editingTitle, localMemo } from "./page";
+import { editingCloud, editingTitle } from "./page";
 import { useAtom } from "jotai";
 import { useSWRConfig } from "swr";
+import useLocalMemo from "../localstore/memo";
 
 export default function DeleteModal() {
   const { mutate } = useSWRConfig();
+  const { delet } = useLocalMemo();
 
   const [title] = useAtom(editingTitle);
   const [cloud] = useAtom(editingCloud);
-  const [, setMemo] = useAtom(localMemo);
   const deleteLocal = () => {
     try {
-      deleteLocalMemo(title);
+      delet(title);
       toast.success("deleted!");
       (document.getElementById("delete_modal") as HTMLDialogElement).close();
-      setMemo(listLocalMemo);
     } catch (error) {
       toast.error((error as any).toString());
     }
@@ -46,7 +42,7 @@ export default function DeleteModal() {
       });
   };
   return (
-    <dialog id="delete_modal" className="modal">
+    <dialog id="delete_modal" className="modal ">
       <div className="modal-box space-y-2">
         <h3 className="font-bold text-lg">
           {`Your're deleting memo ${cloud ? "in cloud " : ""}: ${title}`}

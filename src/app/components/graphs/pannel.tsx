@@ -1,41 +1,41 @@
 import { Canvg } from "canvg";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { useSession } from "next-auth/react";
 import { StoreContext } from "../providers/store-provider";
 import toast from "react-hot-toast";
-import { push } from "@/app/localstore/memo";
+import useLocalMemo from "@/app/localstore/memo";
+import { Memo } from "@/app/tpyes/memo";
+import { useAtom } from "jotai";
+import {
+  drawerCharacterName,
+  drawerIsVisible,
+} from "../editors/character/drawer";
 
 export function Pannal({
   elememtId,
-  setEditorIsVisible,
-  setEditingCharacterName,
+
   forceRadius,
   setForceRadius,
 }: {
   elememtId: string;
-  setEditorIsVisible: (v: boolean) => void;
-  setEditingCharacterName: (id: string | null) => void;
+
   forceRadius: number;
   setForceRadius: (r: number) => void;
 }) {
-  const { memo } = useContext(StoreContext);
-  const session = useSession();
-  // const isOwner = session.data?.user?.id === memo.userId;
-
   return (
-    <div className="w-10/12 sm:w-auto fixed flex bottom-10 left-1/2 transform -translate-x-1/2 flex-row z-[10] space-x-6 bg-base-200 px-6 py-4 rounded-3xl items-center">
-      <ForceRange forceRadius={forceRadius} setForceRadius={setForceRadius} />
-
-      <>
-        <Svg elememtId={elememtId} />{" "}
-        <Edit
-          setEditingCharacterName={setEditingCharacterName}
-          setEditorIsVisible={setEditorIsVisible}
-        />
-        <Cloud />
-        <Json />
-      </>
-    </div>
+    <>
+      <div className="w-10/12 sm:w-auto fixed flex bottom-10 left-1/2 transform -translate-x-1/2 flex-row z-[10] space-x-2 sm:space-x-6 bg-base-200 px-6 py-4 rounded-3xl items-center">
+        <ForceRange forceRadius={forceRadius} setForceRadius={setForceRadius} />
+        <>
+          <Svg elememtId={elememtId} /> <Edit />
+          <Cloud />
+          <ShowJson />
+          <EditJson />
+        </>
+      </div>
+      <JsonModal />
+      <JsonModifyModal />
+    </>
   );
 }
 
@@ -160,20 +160,16 @@ function Svg({ elememtId }: { elememtId: string }) {
   );
 }
 
-function Edit({
-  setEditorIsVisible,
-  setEditingCharacterName,
-}: {
-  setEditorIsVisible: (v: boolean) => void;
-  setEditingCharacterName: (id: string | null) => void;
-}) {
+function Edit() {
+  const [, setDrawerIsVisible] = useAtom(drawerIsVisible);
+  const [, setDrawerCharacterName] = useAtom(drawerCharacterName);
   return (
     <div className="flex flex-col items-center space-y-1">
       <button
         className="btn btn-sm btn-ghost btn-circle"
         onClick={() => {
-          setEditorIsVisible(true);
-          setEditingCharacterName(null);
+          setDrawerIsVisible(true);
+          setDrawerCharacterName(null);
         }}
       >
         <svg
@@ -194,6 +190,7 @@ function Edit({
 function Cloud({}: {}) {
   const session = useSession();
   const { memo } = useContext(StoreContext);
+  const { push } = useLocalMemo();
   return (
     <div className="flex flex-col items-center space-y-1">
       <button
@@ -226,8 +223,7 @@ function Cloud({}: {}) {
     </div>
   );
 }
-function Json({}: {}) {
-  const { memo } = useContext(StoreContext);
+function ShowJson({}: {}) {
   return (
     <>
       <div className="flex flex-col items-center space-y-1">
@@ -252,17 +248,130 @@ function Json({}: {}) {
             />
           </svg>
         </button>
-        <span className="text-xs text-neutral-500">JSON</span>
+        <span className="text-xs text-neutral-500">Json</span>
       </div>
-      <dialog id="show_json" className="modal">
-        <div className="modal-box">
-          <h3 className="font-bold text-lg">Hello!</h3>
-          <p className="py-4">{JSON.stringify(memo)}</p>
-        </div>
-        <form method="dialog" className="modal-backdrop">
-          <button>close</button>
-        </form>
-      </dialog>
     </>
+  );
+}
+
+function EditJson({}: {}) {
+  return (
+    <>
+      <div className="flex flex-col items-center space-y-1">
+        <button
+          className="btn btn-sm btn-ghost btn-circle"
+          onClick={() =>
+            (
+              document.getElementById("modify_json") as HTMLDialogElement
+            ).showModal()
+          }
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            className="w-5 h-5"
+          >
+            <path
+              fillRule="evenodd"
+              d="M4.25 2A2.25 2.25 0 002 4.25v11.5A2.25 2.25 0 004.25 18h11.5A2.25 2.25 0 0018 15.75V4.25A2.25 2.25 0 0015.75 2H4.25zm4.03 6.28a.75.75 0 00-1.06-1.06L4.97 9.47a.75.75 0 000 1.06l2.25 2.25a.75.75 0 001.06-1.06L6.56 10l1.72-1.72zm4.5-1.06a.75.75 0 10-1.06 1.06L13.44 10l-1.72 1.72a.75.75 0 101.06 1.06l2.25-2.25a.75.75 0 000-1.06l-2.25-2.25z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </button>
+        <span className="text-xs text-neutral-500">Modify</span>
+      </div>
+    </>
+  );
+}
+
+function JsonModal() {
+  const { memo } = useContext(StoreContext);
+  const jsonText = JSON.stringify(memo, null, 2);
+  const linesArray = jsonText.split("\n");
+  const codes = linesArray.map((e, i) => (
+    <pre key={i} data-prefix={i}>
+      <code>{e}</code>
+    </pre>
+  ));
+  const [text, setText] = useState("copy");
+  return (
+    <dialog id="show_json" className="modal modal-middle">
+      <div className="modal-box m-0 p-0 relative" style={{ padding: 0 }}>
+        <button
+          className="btn btn-neutral btn-xs absolute right-2 top-2 z-10"
+          onClick={() => {
+            navigator.clipboard.writeText(jsonText).then(() => {
+              setText("copied");
+            });
+          }}
+        >
+          {text}
+        </button>
+        <div className="mockup-code">{codes}</div>
+      </div>
+      <form method="dialog" className="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
+  );
+}
+
+function JsonModifyModal() {
+  const { memo } = useContext(StoreContext);
+  const { update } = useLocalMemo();
+  const [text, setText] = useState(JSON.stringify(memo, null, 2));
+  const [valid, setValid] = useState(true);
+  return (
+    <dialog id="modify_json" className="modal modal-middle">
+      <div className="modal-box">
+        <textarea
+          className="textarea textarea-bordered overflow-y-auto w-full h-full min-h-[60vh]"
+          value={text}
+          onChange={(e) => {
+            setText(e.currentTarget.value);
+            setValid(true);
+            try {
+              const a = JSON.parse(e.currentTarget.value);
+              if (!(a as Memo)) {
+                throw 1;
+              }
+            } catch (error) {
+              setValid(false);
+            }
+          }}
+        ></textarea>
+        <div className="modal-action">
+          <button
+            onClick={() => {
+              setValid(true);
+              try {
+                const newMemo = JSON.parse(text);
+                if (!(newMemo as Memo)) {
+                  throw 1;
+                }
+                update(newMemo);
+              } catch (error) {
+                if (error === 1) {
+                  toast.error("Invalid JSON");
+                } else {
+                  toast.error((error as any).toString());
+                }
+                return;
+              }
+              (
+                document.getElementById("modify_json") as HTMLDialogElement
+              ).close();
+            }}
+            className={`btn btn-md float-right ${!valid ? "btn-disabled" : ""}`}
+          >
+            {valid ? "Save" : "Invalid JSON"}
+          </button>
+        </div>
+      </div>
+      <form method="dialog" className="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
   );
 }

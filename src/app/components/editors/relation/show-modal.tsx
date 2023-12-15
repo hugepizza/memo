@@ -2,18 +2,14 @@ import { useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { StoreContext } from "../../providers/store-provider";
 import { Relation } from "@/app/tpyes/memo";
-export function RelationModal({
-  relationName,
-  isVisible,
-  setIsVisible,
-}: {
-  relationName: string;
-  isVisible: boolean;
-  setIsVisible: (v: boolean) => void;
-}) {
-  const [newRelationNama, setNewRelationNama] = useState("");
-  const [newTargetId, setNewTargetId] = useState<null | null>();
-  const [newSourceId, setNewSourceId] = useState<null | null>();
+import { atom, useAtom } from "jotai";
+
+export const relationShowModalRelationName = atom("");
+export const relationShowModalIsVisible = atom(false);
+
+export function RelationShowModal({}: {}) {
+  const [relationName] = useAtom(relationShowModalRelationName);
+  const [isVisible, setIsVisible] = useAtom(relationShowModalIsVisible);
   const { memo } = useContext(StoreContext);
   const relation = memo.relations.find((e) => e.name === relationName);
   if (!relation) {

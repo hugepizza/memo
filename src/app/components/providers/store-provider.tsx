@@ -1,6 +1,6 @@
-import { getLocalMemo, updateLocalMemo } from "@/app/localstore/memo";
+import useLocalMemo from "@/app/localstore/memo";
 import { Memo } from "@/app/tpyes/memo";
-import { createContext, ReactNode, useState } from "react";
+import { createContext, ReactNode, useEffect, useState } from "react";
 
 interface StoreContextProps {
   memo: Memo;
@@ -17,15 +17,16 @@ export default function StoreContextProvider({
   m: Memo;
   children: ReactNode;
 }) {
+  const { update, get, localMemo } = useLocalMemo();
   const [memo, setMemo] = useState<Memo>(m);
 
+  // useEffect(() => {
+  //   setMemo(get(memo.title)!);
+  // }, [localMemo]);
+
   function updateMemo(memo: Memo) {
-    updateLocalMemo(memo);
-    const newMemo = getLocalMemo(memo.title);
-    if (!newMemo) {
-      throw new Error("memo not exists in local");
-    }
-    setMemo(newMemo);
+    update(memo);
+    setMemo(memo);
   }
 
   const contextValue = {

@@ -1,18 +1,15 @@
 "use client";
 import { ChangeEvent, useState } from "react";
 import toast from "react-hot-toast";
-import {
-  getLocalMemo,
-  listLocalMemo,
-  updateLocalMemo,
-} from "../localstore/memo";
 import { useRouter } from "next/navigation";
 import { useAtom } from "jotai";
-import { editingTitle, localMemo } from "./page";
+import { editingTitle } from "./page";
+import useLocalMemo from "../localstore/memo";
 
 export default function CoverModal() {
   const [title] = useAtom(editingTitle);
   const [file, setFile] = useState<File | null>(null);
+  const { get, update } = useLocalMemo();
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files) {
       return;
@@ -31,9 +28,8 @@ export default function CoverModal() {
     const allowedFileTypes = ["image/jpeg", "image/png"];
     return allowedFileTypes.includes(file.type);
   };
-  const [, setMemo] = useAtom(localMemo);
   return (
-    <dialog id="upload-modal" className="modal">
+    <dialog id="upload-modal" className="modal modal-bottom sm:modal-middle max-w-screen">
       <div className="modal-box space-y-2">
         <h3 className="font-bold text-lg">
           {"Hello! Your're uploading cover image for: " + title}
@@ -58,7 +54,7 @@ export default function CoverModal() {
             if (!title) {
               return;
             }
-            const memo = getLocalMemo(title);
+            const memo = get(title);
             if (!memo) {
               return;
             }
@@ -89,11 +85,10 @@ export default function CoverModal() {
               .then((url) => {
                 if (url) {
                   memo.cover = url;
-                  updateLocalMemo(memo);
+                  update(memo);
                   (
                     document.getElementById("upload-modal") as HTMLDialogElement
                   ).close();
-                  setMemo(listLocalMemo);
                 }
               });
           }}

@@ -1,4 +1,3 @@
-import { MemoSearchResult } from "@/app/tpyes/api";
 import { Memo } from "@/app/tpyes/memo";
 import Link from "next/link";
 import { ReactNode } from "react";

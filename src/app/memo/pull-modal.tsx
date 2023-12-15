@@ -1,21 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import {
-  createLocalMemo,
-  deleteLocalMemo,
-  getLocalMemo,
-  pull,
-} from "../localstore/memo";
 import toast from "react-hot-toast";
 import { editingTitle } from "./page";
 import { useAtom } from "jotai";
+import useLocalMemo from "../localstore/memo";
 
 export default function PullModal() {
   const [title] = useAtom(editingTitle);
   const router = useRouter();
-  const m = getLocalMemo(title);
+  const { get, pull } = useLocalMemo();
+  const m = get(title);
   return (
     <dialog id="pull_modal" className="modal">
       <div className="modal-box space-y-2">
@@ -51,7 +46,7 @@ export default function PullModal() {
                 loading: "downloading",
                 error: (d) => d,
               })
-              .then((t) => router.push("/memo/" + title + "/local"));
+              .then((t) => router.push("/memo/" + title));
           }}
         >
           Confirm

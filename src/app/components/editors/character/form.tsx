@@ -4,13 +4,10 @@ import { StoreContext } from "../../providers/store-provider";
 import { Character } from "@/app/tpyes/memo";
 import toast from "react-hot-toast";
 import { useDebounce } from "use-debounce";
-export function CharacterForm({
-  characterName,
-  setIsVisible,
-}: {
-  characterName: string | null;
-  setIsVisible: (v: boolean) => void;
-}) {
+import { useAtom } from "jotai";
+import { drawerCharacterName, drawerIsVisible } from "./drawer";
+import { produce } from "immer";
+export function CharacterForm({}: {}) {
   const group = [
     { color: "#000000" },
     { color: "#F97B22" },
@@ -23,73 +20,117 @@ export function CharacterForm({
     { color: "#FFCD4B" },
   ];
 
-  const [name, setName] = useState("");
-  const [debouncedName] = useDebounce(name, 400);
-  const [remark, setRemark] = useState("");
-  const [debouncedRemark] = useDebounce(remark, 400);
+  // character name when open the drawer
+  const [characterName, setCharacterName] = useAtom(drawerCharacterName);
+  const [, setIsVisible] = useAtom(drawerIsVisible);
+  const [newName, setNewName] = useState(characterName || "");
+  const [newRemark, setNewRemark] = useState("");
 
   const { memo, setMemo } = useContext(StoreContext);
-  const [color, setColor] = useState(group[0].color);
+  const [newColor, setNewColor] = useState(group[0].color);
   useEffect(() => {
     if (characterName) {
       const character = memo.characters.findLast(
         (e) => e.name === characterName
       );
       if (character) {
-        setName(character.name);
-        setRemark(character.remark ?? "");
-        setColor(character.group?.color ?? "");
+        setNewName(character.name);
+        setNewRemark(character.remark ?? "");
+        setNewColor(character.group?.color ?? "");
       }
     } else {
-      setName("");
-      setRemark("");
-      setColor("");
+      setNewName("");
+      setNewRemark("");
+      setNewColor("");
     }
   }, [memo, characterName]);
+
+  // save on change
   useEffect(() => {
     if (characterName) {
-      const ch = memo.characters.map((ele) => {
-        if (ele.name === characterName) {
-          return {
-            name: debouncedName,
-            remark: debouncedRemark,
-            group: { name: "", color: color },
-          };
-        } else {
-          return ele;
-        }
+      const newMemo = produce(memo, (draft) => {
+        draft.characters.forEach((ele) => {
+          if (ele.name === characterName) {
+            ele.remark = newName;
+            if (!ele.group) {
+              ele.group = { name: "", color: newColor };
+            } else {
+              ele.group.color = newColor;
+            }
+          }
+        });
       });
-      const re = memo.relations.map((e) => {
-        if (e.source === characterName) {
-          return { ...e, source: debouncedName };
-        }
-        if (e.target === characterName) {
-          return { ...e, target: debouncedName };
-        }
-        return e;
-      });
-      setMemo({ ...memo, characters: ch, relations: re });
+      setMemo(newMemo);
     }
-  }, [debouncedName, debouncedRemark, color]);
+  }, [newRemark, newColor]);
+
   return (
     <div className="space-y-12">
       <div className="space-y-2">
         <div className="flex flex-col space-y-2">
-          <p className="text-2xl">{name}</p>
+          <p className="text-2xl">
+            {characterName}
+            {characterName && (
+              <div className="float-right">
+                <DeleteButton
+                  disable={false}
+                  action={() => {
+                    const ch = memo.characters.filter(
+                      (e) => e.name != characterName
+                    );
+                    setMemo({
+                      ...memo,
+                      characters: ch,
+                    });
+                    toast.success("success");
+                    setIsVisible(false);
+                    setCharacterName(null);
+                  }}
+                />
+              </div>
+            )}
+          </p>
           <div className="divider">Character Infomation</div>
-
-          <input
-            type="text"
-            className="input bg-base-200"
-            placeholder={characterName ? "" : "new character name"}
-            value={name}
-            onChange={(e) => setName(e.currentTarget.value)}
-          ></input>
+          <div className="w-full relative flex items-center">
+            <input
+              type="text"
+              className="input bg-base-200 w-full"
+              placeholder={characterName ? "" : "new character name"}
+              value={newName}
+              onChange={(e) => setNewName(e.currentTarget.value)}
+            ></input>
+            <button
+              className={`btn btn-sm  absolute right-1 self-center ${
+                characterName === newName || !newName ? "btn-disabled" : ""
+              }`}
+              onClick={() => {
+                const newMemo = produce(memo, (draft) => {
+                  draft.characters.forEach((ele) => {
+                    if (ele.name === characterName) {
+                      ele.name = newName;
+                    }
+                  });
+                  draft.relations.forEach((ele) => {
+                    if (ele.source === characterName) {
+                      ele.source = newName;
+                    }
+                    if (ele.target === characterName) {
+                      ele.target = newName;
+                    }
+                  });
+                });
+                setMemo(newMemo);
+                setCharacterName(newName);
+              }}
+            >
+              save
+            </button>
+          </div>
           <textarea
             className="textarea bg-base-200"
-            value={remark}
+            value={newRemark}
             placeholder="add remark here..."
-            onChange={(e) => setRemark(e.currentTarget.value)}
+            onChange={(e) => setNewRemark(e.currentTarget.value)}
           ></textarea>
         </div>
         <div className="flex flex-wrap sm:space-x-2 space-x-1 items-center">
@@ -98,9 +139,9 @@ export function CharacterForm({
               <button
                 className={`btn btn-xs btn-square`}
                 style={{ background: ele.color }}
-                onClick={() => setColor(ele.color)}
+                onClick={() => setNewColor(ele.color)}
               >
-                {ele.color === color ? (
+                {ele.color === newColor ? (
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 20 20"
@@ -121,31 +162,14 @@ export function CharacterForm({
           ))}
         </div>
         <div className="flex space-x-2 justify-end">
-          {characterName && (
-            <button
-              className={`btn  btn-warning`}
-              onClick={() => {
-                const ch = memo.characters.filter(
-                  (e) => e.name != characterName
-                );
-                setMemo({
-                  ...memo,
-                  characters: ch,
-                });
-                toast.success("success");
-              }}
-            >
-              Delete
-            </button>
-          )}
-          {!characterName && (
+          {newName && !characterName && (
             <button
               className={`btn`}
               onClick={() => {
                 const c: Character = {
-                  name: name,
-                  remark,
-                  group: { name: "", color: color },
+                  name: newName,
+                  remark: newRemark,
+                  group: { name: "", color: newColor },
                 };
                 const ch = memo.characters.concat(c);
                 setMemo({ ...memo, characters: ch });
@@ -222,13 +246,11 @@ function ReationUpdate({
   const related = memo.relations
     .filter((e) => e.source === characterName)
     .map((e) => e.target);
-  console.log("related", related);
 
   const characters = memo.characters
     .filter((e) => e.name != characterName)
     .filter((e) => related.find((a) => a === e.name) === undefined)
     .map((e) => e.name);
-  console.log("characters", characters);
 
   // .concat(oldTarget);
   const selector = (

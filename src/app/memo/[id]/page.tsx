@@ -38,14 +38,8 @@ type Props = {
 //   };
 // }
 
-export default function Page({
-  params,
-}: {
-  params: { id: string; loc: string };
-}) {
-  return params.loc === "local" ? (
-    <Local title={decodeURIComponent(params.id)}></Local>
-  ) : (
-    <></>
-  );
+export default function Page({ params }: { params: { id: string } }) {
+  console.log("ppppp", params.id);
+
+  return <Local title={decodeURIComponent(params.id)}></Local>;
 }

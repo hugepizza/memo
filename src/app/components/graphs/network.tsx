@@ -5,6 +5,21 @@ import rough from "roughjs";
 import { useD3Network } from "./d3";
 import { useTheme } from "next-themes";
 import { StoreContext } from "../providers/store-provider";
+import { useAtom } from "jotai";
+import {
+  relationEditModalIsVisible,
+  relationEditModalSource,
+  relationEditModalTarget,
+} from "../editors/relation/edit-modal";
+import {
+  relationShowModalIsVisible,
+  relationShowModalRelationName,
+} from "../editors/relation/show-modal";
+import {
+  drawerCharacterName,
+  drawerIsVisible,
+} from "../editors/character/drawer";
+import { group } from "console";
 
 const font = ZCOOL_KuaiLe({ weight: "400", subsets: ["latin"] });
 function randColor(dark: boolean) {
@@ -14,30 +29,31 @@ function randColor(dark: boolean) {
   return colors[Math.floor(Math.random() * 4)];
 }
 export default function NetworkGraph({
-  setEditingCharacterName,
-  setEditingRelationName,
-  setDrawerIsVisible,
-  setModalIsVisible,
   setHoverCharacterName,
   width,
   height,
   forceRadius,
 }: {
-  setEditingCharacterName: (v: string | null) => void;
-  setEditingRelationName: (v: string) => void;
-  setDrawerIsVisible: (v: boolean) => void;
-  setModalIsVisible: (v: boolean) => void;
   setHoverCharacterName: (v: string | null) => void;
   forceRadius: number;
   width: number;
   height: number;
 }) {
+  const nodeRadius = width >= 768 ? 28 : 18;
   const { theme } = useTheme();
   const containerRef = useRef<SVGSVGElement | null>(null);
-  // const [backgroundData, setBackgroundData] = useState<string | null>(null);
-  const nodeRadius = width >= 768 ? 28 : 18;
-
   const { memo } = useContext(StoreContext);
+
+  const [, setSource] = useAtom(relationEditModalSource);
+  const [, setTarget] = useAtom(relationEditModalTarget);
+  const [, setIsVisible] = useAtom(relationEditModalIsVisible);
+
+  const [, setRelationName] = useAtom(relationShowModalRelationName);
+  const [, setRelationIsVisible] = useAtom(relationShowModalIsVisible);
+
+  const [, setDrawerCharacterName] = useAtom(drawerCharacterName);
+  const [, setDrawerIsVisible] = useAtom(drawerIsVisible);
+
   const metaNodes = useMemo(() => {
     return (
       memo.characters?.map((e) => ({
@@ -98,7 +114,7 @@ export default function NetworkGraph({
   useEffect(() => {
     const baseColor = darkMode ? "white" : "black";
     const rc = rough.svg(containerRef.current!);
-    
+
     const roughNodes = d3NodeData.map((e) => {
       const node = createNode({
         rc,
@@ -108,8 +124,10 @@ export default function NetworkGraph({
         fontSize: 14,
         text: metaNodes.find((ef) => ef.data.id === e.id)?.data.label ?? "",
         onclick: (evt: MouseEvent) => {
-          setEditingCharacterName(e.id);
-          setDrawerIsVisible(true);
+          if (!relationSelectorHolding.current && !groupSelectorHolding) {
+            setDrawerCharacterName(e.id);
+            setDrawerIsVisible(true);
+          }
         },
         onmouseover: (evt: MouseEvent) => setHoverCharacterName(e.id),
         onmouseout: (evt: MouseEvent) => setHoverCharacterName(null),
@@ -136,8 +154,8 @@ export default function NetworkGraph({
         nodeRadius: nodeRadius,
         fontSize: 16,
         onclick: (evt: MouseEvent) => {
-          setEditingRelationName(e.id);
-          setModalIsVisible(true);
+          setRelationName(e.id);
+          setRelationIsVisible(true);
         },
       });
       return lines;
@@ -162,8 +180,100 @@ export default function NetworkGraph({
     };
   }, [d3EdgeData, d3NodeData, darkMode, metaEdges, metaNodes]);
 
+  const reletionSelector = useRef<HTMLElement[]>([]);
+  const groupSelector = useRef<HTMLElement[]>([]);
+
+  const groupSelectorHolding = useRef<boolean>(false);
+
+  const relationSelectorHolding = useRef<boolean>(false);
+  const relationSelectorCleanup = () => {
+    console.log("relationSelectorCleanup");
+    reletionSelector.current.forEach((e) => {
+      e.removeAttribute("stroke");
+      e.removeAttribute("strokeWidth");
+    });
+    reletionSelector.current = [];
+  };
+
+  const groupSelectorCleanup = () => {
+    console.log("groupSelectorCleanup");
+    groupSelector.current.forEach((e) => {
+      e.removeAttribute("stroke");
+      e.removeAttribute("strokeWidth");
+    });
+    groupSelector.current = [];
+  };
+
+  useEffect(() => {
+    const parentElement = document.getElementById("root");
+    if (parentElement) {
+      parentElement.addEventListener("keydown", (event) => {
+        if (event.key === "q") {
+          relationSelectorHolding.current = true;
+        } else if (event.key === "w") {
+          groupSelectorHolding.current = true;
+        }
+      });
+      parentElement.addEventListener("keyup", (event) => {
+        if (event.key === "q") {
+          relationSelectorHolding.current = false;
+          relationSelectorCleanup();
+        } else if (event.key === "w") {
+          groupSelectorHolding.current = false;
+          groupSelectorCleanup();
+        }
+      });
+    }
+  }, []);
+
   return (
     <svg
+      tabIndex={0}
+      onClick={(e) => {
+        if (relationSelectorHolding.current) {
+          const ele = e.target as SVGSVGElement;
+          const tagName = ele.tagName;
+          let target: HTMLElement | null = null;
+          if (tagName === "text") {
+            target = ele.parentElement;
+          } else if (tagName === "path") {
+            target = ele.parentElement?.parentElement || null;
+          }
+          if (target === null) {
+            return;
+          }
+          const cname = target.getAttribute("data-character-name");
+          if (!cname || !metaNodes.find((e) => cname === e.data.id)) {
+            return;
+          }
+          if (
+            reletionSelector.current.find(
+              (e) => e.getAttribute("data-character-name") === cname
+            )
+          ) {
+            return;
+          }
+          target.setAttribute("stroke", "red");
+          target.setAttribute("strokeWidth", "2");
+          reletionSelector.current = [...reletionSelector.current, target];
+          if (reletionSelector.current.length === 2) {
+            console.group("MultiClick all selected");
+            console.groupEnd();
+
+            setSource(
+              reletionSelector.current[0].getAttribute("data-character-name")!
+            );
+            setTarget(
+              reletionSelector.current[1].getAttribute("data-character-name")!
+            );
+            setIsVisible(true);
+
+            relationSelectorCleanup();
+          }
+        } else if (groupSelectorHolding.current) {
+          console.log("group selecting");
+        }
+      }}
       id="download"
       style={{
         width: "100%",

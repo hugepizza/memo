@@ -27,7 +27,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={"w-full h-full "}>
-      <body className="suppressHydrationWarning w-full h-full">
+      <body className="suppressHydrationWarning w-full h-full" id="root">
         <SessionProvider>
           <NextThemeProvider>
             <ThemeWrapper>

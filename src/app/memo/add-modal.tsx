@@ -2,15 +2,16 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { createLocalMemo } from "../localstore/memo";
 import toast from "react-hot-toast";
+import useLocalMemo from "../localstore/memo";
 
 export default function AddModal() {
+  const { create } = useLocalMemo();
   const [title, setTitle] = useState("");
   const router = useRouter();
 
   return (
-    <dialog id="custom_memo" className="modal">
+    <dialog id="custom_memo" className="modal modal-middle">
       <div className="modal-box space-y-2">
         <h3 className="font-bold text-lg">
           {"Hello! Your're creating a custom memo"}
@@ -26,9 +27,9 @@ export default function AddModal() {
           className="btn float-right"
           onClick={() => {
             try {
-              createLocalMemo(title);
+              create(title);
               setTitle("");
-              router.push("/memo/" + title + "/local");
+              router.push("/memo/" + title);
             } catch (error) {
               toast.error((error as any).toString());
             }

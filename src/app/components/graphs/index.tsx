@@ -2,14 +2,16 @@
 
 import { useContext, useEffect, useState } from "react";
 
-import { Drawer } from "../editors/character/drawer";
+import { Drawer, drawerIsVisible } from "../editors/character/drawer";
 import { Pannal } from "./pannel";
-import { RelationModal } from "../editors/relation/modal";
+import { RelationShowModal } from "../editors/relation/show-modal";
 import { ZCOOL_KuaiLe } from "next/font/google";
 import NetworkGraph from "./network";
 import { useSession } from "next-auth/react";
 import { Character } from "@/app/tpyes/memo";
 import { StoreContext } from "../providers/store-provider";
+import { RelationEditModal } from "../editors/relation/edit-modal";
+import { useAtom } from "jotai";
 
 export type MetaNode = {
   data: { id: string; label: string; remark?: string; color?: string };
@@ -31,15 +33,10 @@ export default function Relation() {
     setForceRadius(document.documentElement.clientWidth >= 768 ? 80 : 60);
   }, []);
 
-  const [editingCharacterName, setEditingCharacterName] = useState<
-    string | null
-  >(null);
-  const [editingRelationName, setEditingRelationName] = useState<string>("");
-  const [drawerIsVisible, setDrawerIsVisible] = useState(false);
-  const [modalIsVisible, setModalIsVisible] = useState(false);
   const [hoverCharacterName, setHoverCharacterName] = useState<string | null>(
     null
   );
+
   return (
     <div
       style={{
@@ -59,36 +56,23 @@ export default function Relation() {
             <NetworkGraph
               height={screenHeight}
               width={screenWidth}
-              setDrawerIsVisible={setDrawerIsVisible}
-              setEditingCharacterName={setEditingCharacterName}
-              setEditingRelationName={setEditingRelationName}
-              setModalIsVisible={setModalIsVisible}
               forceRadius={forceRadius}
               setHoverCharacterName={setHoverCharacterName}
             />
             <CharacterDetail name={hoverCharacterName}></CharacterDetail>
             <Pannal
               elememtId={"download"}
-              setEditorIsVisible={setDrawerIsVisible}
-              setEditingCharacterName={setEditingCharacterName}
               forceRadius={forceRadius}
               setForceRadius={setForceRadius}
             ></Pannal>
           </>
         ) : (
-          <Placeholder setDrawerIsVisible={setDrawerIsVisible} />
+          <Placeholder />
         )}
       </div>
-      <Drawer
-        characterName={editingCharacterName}
-        isVisible={drawerIsVisible}
-        setIsVisible={setDrawerIsVisible}
-      ></Drawer>
-      <RelationModal
-        relationName={editingRelationName}
-        isVisible={modalIsVisible}
-        setIsVisible={setModalIsVisible}
-      ></RelationModal>
+      <Drawer />
+      <RelationShowModal />
+      <RelationEditModal />
     </div>
   );
 }
@@ -121,11 +105,8 @@ function CharacterDetail({ name }: { name: string | null }) {
   );
 }
 
-function Placeholder({
-  setDrawerIsVisible,
-}: {
-  setDrawerIsVisible: (v: boolean) => void;
-}) {
+function Placeholder() {
+  const [, setDrawerIsVisible] = useAtom(drawerIsVisible);
   return (
     <div className="hero min-h-screen bg-base-200">
       <div className="hero-content text-center">
