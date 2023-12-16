@@ -10,15 +10,15 @@ import {
   drawerCharacterName,
   drawerIsVisible,
 } from "../editors/character/drawer";
+import { svg2png } from "@/app/kits/svg2png";
+import { useTheme } from "next-themes";
 
 export function Pannal({
   elememtId,
-
   forceRadius,
   setForceRadius,
 }: {
   elememtId: string;
-
   forceRadius: number;
   setForceRadius: (r: number) => void;
 }) {
@@ -31,10 +31,11 @@ export function Pannal({
             setForceRadius={setForceRadius}
           />
           <>
-            <Svg elememtId={elememtId} /> <Edit />
+            <Png elememtId={elememtId} />
+            <Edit />
             <Cloud />
             <ShowJson />
-            <EditJson />
+            {/* <EditJson /> */}
           </>
         </div>
         <div className="flex flex-col space-y-1 text-xs text-base-content">
@@ -83,81 +84,27 @@ function ForceRange({
   );
 }
 
-function Svg({ elememtId }: { elememtId: string }) {
-  const download = async (elememtId: string) => {
+function Png({ elememtId }: { elememtId: string }) {
+  const { memo } = useContext(StoreContext);
+  const downloadPNG = async (elememtId: string) => {
     const ele = document.getElementById(elememtId);
-    if (ele instanceof SVGSVGElement) {
-      const downloadElement = ele as SVGSVGElement;
-      const cloned = downloadElement.cloneNode(true) as SVGSVGElement;
-      const images = cloned.getElementsByTagNameNS(
-        "http://www.w3.org/2000/svg",
-        "image"
-      );
-
-      const bgHandle = () =>
-        new Promise(async (resolve) => {
-          if (images.length > 0) {
-            const href = images[0].getAttribute("href");
-            if (href) {
-              const bgBlob = await (await fetch(href)).blob();
-              const reader = new FileReader();
-
-              reader.onloadend = function () {
-                if (typeof reader.result === "string") {
-                  const base64String = reader.result.split(",")[1];
-                  images[0].setAttribute(
-                    "href",
-                    "data:image/jpeg;base64," + base64String
-                  );
-                }
-                resolve(1);
-              };
-              reader.readAsDataURL(bgBlob);
-            } else {
-              resolve(1);
-            }
-          } else {
-            resolve(1);
-          }
-        });
-
-      await bgHandle();
-
-      // if (context) {
-      //   context.scale(scaleFactor, scaleFactor);
-      //   const v = await Canvg.from(
-      //     context,
-      //     new XMLSerializer().serializeToString(cloned)
-      //   );
-      //   v.start();
-      //   const dataUrl = canvas.toDataURL("image/png");
-      //   const downloadLink = document.createElement("a");
-      //   downloadLink.href = dataUrl;
-      //   downloadLink.download = "downloaded.png";
-      //   document.body.appendChild(downloadLink);
-      //   downloadLink.click();
-      //   document.body.removeChild(downloadLink);
-      // }
-
-      const svgString = new XMLSerializer().serializeToString(cloned);
-      const blob = new Blob([svgString], {
-        type: "image/svg+xml;charset=utf-8",
-      });
-      const dataUrl = URL.createObjectURL(blob);
-      const downloadLink = document.createElement("a");
-      downloadLink.href = dataUrl;
-      downloadLink.download = "downloaded.svg";
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
+    if (!ele) {
+      return;
     }
+    const dataUrl = await svg2png(ele, "#ece3cb");
+    const downloadLink = document.createElement("a");
+    downloadLink.href = dataUrl;
+    downloadLink.download = memo.title + ".png";
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
   };
   return (
     <div className="flex flex-col items-center space-y-1">
       <button
         className="btn btn-sm btn-ghost btn-circle"
         onClick={() => {
-          download(elememtId);
+          downloadPNG(elememtId);
         }}
       >
         <svg
@@ -169,7 +116,7 @@ function Svg({ elememtId }: { elememtId: string }) {
           <path d="M13.75 7h-3v5.296l1.943-2.048a.75.75 0 011.114 1.004l-3.25 3.5a.75.75 0 01-1.114 0l-3.25-3.5a.75.75 0 111.114-1.004l1.943 2.048V7h1.5V1.75a.75.75 0 00-1.5 0V7h-3A2.25 2.25 0 004 9.25v7.5A2.25 2.25 0 006.25 19h7.5A2.25 2.25 0 0016 16.75v-7.5A2.25 2.25 0 0013.75 7z" />
         </svg>
       </button>
-      <span className="text-xs text-neutral-500">SVG</span>
+      <span className="text-xs text-neutral-500">PNG</span>
     </div>
   );
 }

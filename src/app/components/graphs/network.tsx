@@ -240,80 +240,82 @@ export default function NetworkGraph({
       });
     }
   }, []);
+  const click = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (relationSelectorHolding.current) {
+      const ele = e.target as SVGSVGElement;
+      const tagName = ele.tagName;
+      let target: HTMLElement | null = null;
+      if (tagName === "text") {
+        target = ele.parentElement;
+      } else if (tagName === "path") {
+        target = ele.parentElement?.parentElement || null;
+      }
+      if (target === null) {
+        return;
+      }
+      const cname = target.getAttribute("data-character-name");
+      if (!cname || !metaNodes.find((e) => cname === e.data.id)) {
+        return;
+      }
+      if (
+        reletionSelector.current.find(
+          (e) => e.getAttribute("data-character-name") === cname
+        )
+      ) {
+        return;
+      }
+      target.setAttribute("stroke", "red");
+      target.setAttribute("strokeWidth", "2");
+      reletionSelector.current = [...reletionSelector.current, target];
+      if (reletionSelector.current.length === 2) {
+        console.group("MultiClick all selected");
+        console.groupEnd();
+
+        setSource(
+          reletionSelector.current[0].getAttribute("data-character-name")!
+        );
+        setTarget(
+          reletionSelector.current[1].getAttribute("data-character-name")!
+        );
+        setIsVisible(true);
+
+        relationSelectorCleanup();
+      }
+    } else if (groupSelectorHolding.current) {
+      const ele = e.target as SVGSVGElement;
+      const tagName = ele.tagName;
+      let target: HTMLElement | null = null;
+      if (tagName === "text") {
+        target = ele.parentElement;
+      } else if (tagName === "path") {
+        target = ele.parentElement?.parentElement || null;
+      }
+      if (target === null) {
+        return;
+      }
+      const cname = target.getAttribute("data-character-name");
+      if (!cname || !metaNodes.find((e) => cname === e.data.id)) {
+        return;
+      }
+      if (
+        groupSelector.current.find(
+          (e) => e.getAttribute("data-character-name") === cname
+        )
+      ) {
+        return;
+      }
+      target.setAttribute("stroke", "red");
+      target.setAttribute("stroke-width", "2px");
+      groupSelector.current = [...groupSelector.current, target];
+    }
+  };
 
   return (
     <svg
       tabIndex={0}
-      onClick={(e) => {
-        if (relationSelectorHolding.current) {
-          const ele = e.target as SVGSVGElement;
-          const tagName = ele.tagName;
-          let target: HTMLElement | null = null;
-          if (tagName === "text") {
-            target = ele.parentElement;
-          } else if (tagName === "path") {
-            target = ele.parentElement?.parentElement || null;
-          }
-          if (target === null) {
-            return;
-          }
-          const cname = target.getAttribute("data-character-name");
-          if (!cname || !metaNodes.find((e) => cname === e.data.id)) {
-            return;
-          }
-          if (
-            reletionSelector.current.find(
-              (e) => e.getAttribute("data-character-name") === cname
-            )
-          ) {
-            return;
-          }
-          target.setAttribute("stroke", "red");
-          target.setAttribute("strokeWidth", "2");
-          reletionSelector.current = [...reletionSelector.current, target];
-          if (reletionSelector.current.length === 2) {
-            console.group("MultiClick all selected");
-            console.groupEnd();
-
-            setSource(
-              reletionSelector.current[0].getAttribute("data-character-name")!
-            );
-            setTarget(
-              reletionSelector.current[1].getAttribute("data-character-name")!
-            );
-            setIsVisible(true);
-
-            relationSelectorCleanup();
-          }
-        } else if (groupSelectorHolding.current) {
-          const ele = e.target as SVGSVGElement;
-          const tagName = ele.tagName;
-          let target: HTMLElement | null = null;
-          if (tagName === "text") {
-            target = ele.parentElement;
-          } else if (tagName === "path") {
-            target = ele.parentElement?.parentElement || null;
-          }
-          if (target === null) {
-            return;
-          }
-          const cname = target.getAttribute("data-character-name");
-          if (!cname || !metaNodes.find((e) => cname === e.data.id)) {
-            return;
-          }
-          if (
-            groupSelector.current.find(
-              (e) => e.getAttribute("data-character-name") === cname
-            )
-          ) {
-            return;
-          }
-          target.setAttribute("stroke", "red");
-          target.setAttribute("stroke-width", "2px");
-          groupSelector.current = [...groupSelector.current, target];
-        }
-      }}
+      onClick={click}
       id="download"
+      className="focus:outline-none"
       style={{
         width: "100%",
         height: "100%",
@@ -326,7 +328,7 @@ export default function NetworkGraph({
     }
   `}
       </style>
-      <defs>
+      {/* <defs>
         <pattern
           id="paper-pattern"
           patternUnits="userSpaceOnUse"
@@ -341,7 +343,7 @@ export default function NetworkGraph({
           />
         </pattern>
       </defs>
-      <rect width={"100%"} height={"100%"} fill="url(#paper-pattern)" />
+      <rect width={"100%"} height={"100%"} fill="url(#paper-pattern)" /> */}
       <g
         ref={containerRef}
         style={{

@@ -278,7 +278,7 @@ function ReationUpdate({
           <span className="badge badge-lg badge-neutral">{characterName}</span>
           <input
             type="text"
-            className="input input-sm"
+            className="input input-sm w-1/2"
             placeholder="enter relationship"
             value={newRelationName}
             onChange={(e) => setNewRelationName(e.currentTarget.value)}
